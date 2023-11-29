@@ -488,19 +488,16 @@ Function Create-Service{
         #If not, create the service
         Write-Host "[*] Creating $serviceName service"
         if($serviceName -eq "unquotedsvc"){
-            #sc.exe create $serviceName binpath= $servicePath type= own displayname= $serviceDisplayName
-            New-Service -Name $serviceName -BinaryPathName $servicePath -StartupType Automatic -DisplayName $serviceDisplayName
+            New-Service -Name $serviceName -BinaryPathName $servicePath -StartupType Manual -DisplayName $serviceDisplayName
         }
         else{
-            $newServicePath = "\"+ $servicePath +"\"
-            #sc.exe create $serviceName binpath= $newServicePath type= own displayname= $serviceDisplayName
-            New-Service -Name $serviceName -BinaryPathName $newServicePath -StartupType Automatic -DisplayName $serviceDisplayName
+            New-Service -Name $serviceName -BinaryPathName $servicePath -StartupType Manual -DisplayName $serviceDisplayName
         }
     }
     return
 }
 
-Function Set-Service-Permission(){
+Function Set-ServicePermission(){
     Param(
         $serviceName,
         $serviceSddl
@@ -511,14 +508,14 @@ Function Set-Service-Permission(){
     return 
 }
 
-Function Start-Local-Service(){
+Function Start-LocalService(){
     Param(
         $serviceName
     )
     
     # Check if the service is running
     if((Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status -eq "Running"){
-        Write-Host "Service $serviceName is already running"
+        Write-Host "[-] Service $serviceName is already running"
         return
     }
     else{
@@ -531,60 +528,62 @@ Function CleanUp-Local(){
     Param(
         $inputFile
     )
+
     $localPath = (pwd).Path
     $fullPath = $localPath+"\"+$inputFile
+
     if($inputFile -eq "AdminPaint.lnk" ){
-    Write-Host "[*] Removing $fullFile"
-    Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "CleanUp.ps1"){
-        Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "daclservice.exe"){
-        Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "dllhijackservice.exe"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "filepermservice.exe"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "insecureregistryservice.exe"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "lpe.bat"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "program.exe"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "savecred.bat"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "Unattend.xml"){
-       Write-Host "[*] Removing $fullFile"
-        Remove-Item $fullFile
+        Write-Host "[-] Removing $fullPath"
+        Remove-Item $fullPath
     }
 
     if($inputFile -eq "unquotedpathservice.exe"){
-       Write-Host "[*] Removing $fullFile"
+        Write-Host "[-] Removing $fullPath"
         Remove-Item $inputFile
     }
 }
@@ -695,8 +694,8 @@ Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
 # Create and Start Service
 $service = "svcdll"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "DLL Hijack Service"
-Set-Service-Permission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
-Start-Local-Service -serviceName $service
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+Start-LocalService -serviceName $service
  
 Write-Host "[+] Services (DLL Hijacking) configuration complete."
 Write-Host "----------------------------------------"
@@ -713,7 +712,7 @@ Write-File -InputFile $inputFile -path $path
 
 # Checking hash
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
-Check-Hash -file daclservice.exe -Hash $Hash
+Check-Hash -file $inputFile -Hash $Hash
 
 # Creating Directory for Password Mining
 Set-Folder -folder $path
@@ -728,8 +727,8 @@ Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
 # Create and Start Service
 $service = "daclsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "DACL Service"
-Set-Service-Permission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSWDC;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
-Start-Local-Service -serviceName $service
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSWDC;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+Start-LocalService -serviceName $service
  
 Write-Host "[+] Services (binPath) configuration complete."
 Write-Host "----------------------------------------"
@@ -746,7 +745,7 @@ Write-File -InputFile $inputFile -path $path
 
 # Checking hash
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
-Check-Hash -file daclservice.exe -Hash $Hash
+Check-Hash -file $inputFile -Hash $Hash
 
 # Creating Directory 
 Set-Folder -folder $path
@@ -761,8 +760,8 @@ Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
 # Create and Start Service
 $service = "unquotedsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "Unquoted Path Service"
-Set-Service-Permission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
-Start-Local-Service -serviceName $service
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+Start-LocalService -serviceName $service
 Write-Host "[+] Services (Unquoted Path) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -778,7 +777,7 @@ Write-File -InputFile $inputFile -path $path
 
 # Checking hash
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
-Check-Hash -file daclservice.exe -Hash $Hash
+Check-Hash -file $inputFile -Hash $Hash
 
 # Creating Directory 
 Set-Folder -folder $path
@@ -793,12 +792,14 @@ Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
 # Create and Start Service
 $service = "regsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "Insecure Registry Service"
-Set-Service-Permission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+
+# Start Service
+Start-LocalService -serviceName $service
 
 # Change registry permission
-## Need to find about this, change registry permission
-Write-Host "Changing registry permissions for regsvc.."
-# echo HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\services\regsvc [17 1 21 8] | Set-Content -Path 'regsvc.txt'
+Write-Host "[*] Changing registry permissions for regsvc.."
+ 
 # Registry path
 $registryPath = "HKLM:\SYSTEM\ControlSet001\services\regsvc"
 
@@ -811,10 +812,6 @@ New-Item -Path $registryPath -Force | Out-Null
 # Set registry value
 Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $valueData 
 
-#regini regsvc.txt
-#Remove-Item regsvc.txt
-
-Start-Local-Service -serviceName $service
 Write-Host "[+] Services (Registry) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -831,7 +828,7 @@ Write-File -InputFile $inputFile -path $path
 
 # Checking hash
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
-Check-Hash -file daclservice.exe -Hash $Hash
+Check-Hash -file $inputFile -Hash $Hash
 
 # Creating Directory 
 Set-Folder -folder $path
@@ -846,8 +843,8 @@ Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
 # Create and Start Service
 $service = "filepermsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "File Permissions Service"
-Set-Service-Permission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
-Start-Local-Service -serviceName $service
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+Start-LocalService -serviceName $service
 Write-Host "[+] Services (Executable File) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -860,7 +857,7 @@ $inputFile = "program.exe"
 $path = "C:\Program Files\Autorun Program\"
 
 # Copy Item
-Write-Host "Copying dummy program" 
+Write-Host "[+] Copying dummy program" 
 Copy-Item  -Path "C:\Windows\System32\locator.exe" -Destination $inputFile
 
 # Moving it to $path
@@ -1091,17 +1088,17 @@ Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -
 Write-Host "`n###########################################################################################"
 Write-Host "#### [-] Cleaning up Locally ####"
 
-CleanUp-Local -inputFile AdminPaint.lnk
-CleanUp-Local -inputFile CleanUp.ps1
-CleanUp-Local -inputFile daclservice.exe
-CleanUp-Local -inputFile dllhijackservice.exe
-CleanUp-Local -inputFile filepermservice.exe
-CleanUp-Local -inputFile insecureregistryservice.exe
-CleanUp-Local -inputFile lpe.bat
-CleanUp-Local -inputFile program.exe
-CleanUp-Local -inputFile savecred.bat
-CleanUp-Local -inputFile Unattend.xml
-CleanUp-Local -inputFile unquotedpathservice.exe
+# CleanUp-Local -inputFile "AdminPaint.lnk"
+# CleanUp-Local -inputFile "CleanUp.ps1"
+# CleanUp-Local -inputFile "daclservice.exe"
+# CleanUp-Local -inputFile "dllhijackservice.exe"
+# CleanUp-Local -inputFile "filepermservice.exe"
+# CleanUp-Local -inputFile "insecureregistryservice.exe"
+# CleanUp-Local -inputFile "lpe.bat"
+# CleanUp-Local -inputFile "program.exe"
+# CleanUp-Local -inputFile "savecred.bat"
+CleanUp-Local -inputFile "Unattend.xml"
+# CleanUp-Local -inputFile "unquotedpathservice.exe"
 
 Write-Host "`n###########################################################################################"
 Write-Host "[+] Configuration completed successfully."
