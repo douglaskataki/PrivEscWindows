@@ -1,5 +1,6 @@
 # PrivEscWindows
 Powershell Script For windows Vuln machine
+Sorry guys, I don't know much from Powershell Scripting and because of that, my script is quite long ...
 
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/pt-br/windows/downloads/virtual-machines/
@@ -9,14 +10,13 @@ We need to enable our machine to execute scripts.
 To do that, we will follow this instructions:
 
 1) Run Powershell as Administrator.
-2) Execute this as Administrator.
+2) Execute this following command as Administrator.
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
 ```
 
 # Disable Windows Defender
-
 Until now, I couldn't find anyway to automate this task. So, just follow this instructions to disable windows defender.
 
 1) Copy minimal to desktop
@@ -40,6 +40,7 @@ cd C:\Users\User\Desktop
 10) Click in Ok and Restart. This will restart the machine.
 
 # Running setup.ps1
+Now is the fun part, we run this script and we have a vulnerable windows 11 machine. We can now train the most common privilege escalation techniques.
 
 1) Copy the script to Desktop
 2) Run powershell as Administrator
@@ -49,6 +50,7 @@ cd C:\Users\User\Desktop
 cd C:\Users\User\Desktop
 ```
 4) Run the script:
+
 ```powershell
 .\setup.ps1
 ```

@@ -13,12 +13,12 @@ Function Disable-Firewall(){
     # Attention
     # This needs to be executed before in minimal boot configuration (as Administrator!)
     $regpathControl = 'HKLM:\SYSTEM\CurrentControlSet\Services'
-    Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4 -Force
     Set-ItemProperty -Path ($regpathControl+"\Sense") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdFilter") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdNisDrv") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdNisSvc") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdBoot") -Name Start -Value 4
+    Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4 -Force
 
     Write-Host "Disable schedule tasks for Windows Defender"
     Get-ScheduledTask “Windows Defender Cache Maintenance” | Disable-ScheduledTask | Select-Object -Property Actions,State
@@ -487,10 +487,24 @@ Function Create-Service{
     else{
         #If not, create the service
         Write-Host "[*] Creating $serviceName service"
+        # No quotes service
         if($serviceName -eq "unquotedsvc"){
             New-Service -Name $serviceName -BinaryPathName $servicePath -StartupType Manual -DisplayName $serviceDisplayName
         }
+        # These services needed to be in quotes
         else{
+            if($serviceName -eq "svcdll"){
+                $servicePath = '"C:\Program Files\DLL Hijack Service\dllhijackservice.exe", "DLL Hijack Service"'
+            }
+            if($serviceName -eq "daclsvc"){
+                $servicePath = '"C:\Program Files\DACL Service\daclservice.exe"'
+            }
+            if($serviceName -eq "regsvc"){
+                $servicePath = '"C:\Program Files\Insecure Registry Service\insecureregistryservice.exe"'
+            }
+            if($serviceName -eq "filepermsvc"){
+                $servicePath = '"C:\Program Files\File Permissions Service\filepermservice.exe"'
+            }
             New-Service -Name $serviceName -BinaryPathName $servicePath -StartupType Manual -DisplayName $serviceDisplayName
         }
     }
@@ -627,6 +641,19 @@ Set-User -user $user -password $password
 $groupName = "Administrators"
 Set-Group -userName $user -groupName $groupName
 
+## backupuser - secretdumps
+
+$user = 'backupuser'
+$password = "backup1"
+
+Set-User -user $user -password $password
+
+$groupName = "Backup Operators"
+Set-Group -userName $user -groupName $groupName
+
+$groupName = "Remote Management Users"
+Set-Group -userName $user -groupName $groupName
+
 # Enable Remote Desktop Services
 Write-Host "[*] Enable Remote Desktop"
 Restart-Service -Force -DisplayName "Remote Desktop Services"
@@ -662,8 +689,11 @@ Set-Folder -folder $folder
 $folder = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\"
 Set-Folder -folder $folder
 
-# Set PS History
+# Set PS History and grant Read for everybody
+# check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
 Set-PSReadlineOption -HistorySavePath "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Everyone:R
 
 Write-Host "[+] Initial setup complete."
 
