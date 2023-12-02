@@ -654,6 +654,18 @@ Set-Group -userName $user -groupName $groupName
 $groupName = "Remote Management Users"
 Set-Group -userName $user -groupName $groupName
 
+## fakeadmin - seimpersonate
+
+$user = 'fakeadmin'
+$password = "fakeadmin"
+
+Set-User -user $user -password $password
+
+$groupName = "Remote Management Users"
+Set-Group -userName $user -groupName $groupName
+
+.\Set-UserRights.ps1 -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
+
 # Enable Remote Desktop Services
 Write-Host "[*] Enable Remote Desktop"
 Restart-Service -Force -DisplayName "Remote Desktop Services"

@@ -49,7 +49,9 @@ Now is the fun part, we run this script and we have a vulnerable windows 11 mach
 ```powershell
 cd C:\Users\User\Desktop
 ```
-4) Run the script:
+
+4) Save this script https://github.com/blakedrumm/SCOM-Scripts-and-SQL/blob/master/Powershell/General%20Functions/Set-UserRights.ps1#L437 as `Set-UserRights` in Desktop (if you have some question, you can try (this link)[https://blakedrumm.com/blog/set-and-check-user-rights-assignment/] and check some usage of this script)
+5) Run the setup script:
 
 ```powershell
 .\setup.ps1
