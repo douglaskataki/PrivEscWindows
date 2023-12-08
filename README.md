@@ -1,5 +1,5 @@
 # Basic Privilege Escalation in Windows
-Powershell Script For windows 11 Vuln machine
+Powershell Script For Windows 11 Vulnerable machine in order to practice most common privilege escalation techniques (still in development!).
 Sorry guys, I don't know much from Powershell Scripting (still learning) and because of that, my script is quite long ...
 Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blakedrumm](github.com/blakedrumm), they made scripts that I could use as bases for my own.
 And last, but not least, [](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
