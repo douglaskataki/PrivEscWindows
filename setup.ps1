@@ -1,5 +1,456 @@
 #Requires -RunAsAdministrator
 
+# Enable SMB transfer
+ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name AllowInsecureGuestAuth -Value 1 -PropertyType DWORD -Force
+
+# Thanks for blakedrumm for this script:
+
+Function Set-UserRights(){
+    <#
+    .Synopsis
+        Add and Remove User Right(s) for defined user(s) and computer(s).
+    
+    .DESCRIPTION
+        Add and Remove User Rights via Powershell.
+    
+    .PARAMETER AddRight
+        You want to Add a user right.
+    
+    .Parameter ComputerName
+        Defines the name of the computer where the user right should be granted. This can be multiple values, comma seperated.
+        Default is the local computer on which the script is run.
+    
+    .PARAMETER RemoveRight
+        You want to Remove a user right.
+    
+    .Parameter Username
+        Defines the Username under which the service should run. This can be multiple values, comma seperated.
+        Use the form: domain\Username.
+        Default is the user under which the script is run.
+    
+    .PARAMETER UserRight
+        Defines the User Right you want to set. This can be multiple values, comma seperated.
+        Name of the right you want to add to: SeServiceLogonRight
+        There is no default for this argument
+        
+        All of the Options you can use:
+            Replace a process level token (SeAssignPrimaryTokenPrivilege)
+            Generate security audits (SeAuditPrivilege)
+            Back up files and directories (SeBackupPrivilege)
+            Log on as a batch job (SeBatchLogonRight)
+            Bypass traverse checking (SeChangeNotifyPrivilege)
+            Create global objects (SeCreateGlobalPrivilege)
+            Create a pagefile (SeCreatePagefilePrivilege)
+            Create permanent shared objects (SeCreatePermanentPrivilege)
+            Create symbolic links (SeCreateSymbolicLinkPrivilege)
+            Create a token object (SeCreateTokenPrivilege)
+            Debug programs (SeDebugPrivilege)
+            Obtain an impersonation token for another user in the same session (SeDelegateSessionUserImpersonatePrivilege)
+            Deny log on as a batch job (SeDenyBatchLogonRight)
+            Deny log on locally (SeDenyInteractiveLogonRight)
+            Deny access to this computer from the network (SeDenyNetworkLogonRight)
+            Deny log on through Remote Desktop Services (SeDenyRemoteInteractiveLogonRight)
+            Deny log on as a service (SeDenyServiceLogonRight)
+            Enable computer and user accounts to be trusted for delegation (SeEnableDelegationPrivilege)
+            Impersonate a client after authentication (SeImpersonatePrivilege)
+            Increase scheduling priority (SeIncreaseBasePriorityPrivilege)
+            Adjust memory quotas for a process (SeIncreaseQuotaPrivilege)
+            Increase a process working set (SeIncreaseWorkingSetPrivilege)
+            Allow log on locally (SeInteractiveLogonRight)
+            Load and unload device drivers (SeLoadDriverPrivilege)
+            Lock pages in memory (SeLockMemoryPrivilege)
+            Add workstations to domain (SeMachineAccountPrivilege)
+            Perform volume maintenance tasks (SeManageVolumePrivilege)
+            Access this computer from the network (SeNetworkLogonRight)
+            Profile single process (SeProfileSingleProcessPrivilege)
+            Modify an object label (SeRelabelPrivilege)
+            Allow log on through Remote Desktop Services (SeRemoteInteractiveLogonRight)
+            Force shutdown from a remote system (SeRemoteShutdownPrivilege)
+            Restore files and directories (SeRestorePrivilege)
+            Manage auditing and security log (SeSecurityPrivilege)
+            Log on as a service (SeServiceLogonRight)
+            Shut down the system (SeShutdownPrivilege)
+            Synchronize directory service data (SeSyncAgentPrivilege)
+            Modify firmware environment values (SeSystemEnvironmentPrivilege)
+            Profile system performance (SeSystemProfilePrivilege)
+            Change the system time (SeSystemtimePrivilege)
+            Take ownership of files or other objects (SeTakeOwnershipPrivilege)
+            Act as part of the operating system (SeTcbPrivilege)
+            Change the time zone (SeTimeZonePrivilege)
+            Access Credential Manager as a trusted caller (SeTrustedCredManAccessPrivilege)
+            Remove computer from docking station (SeUndockPrivilege)
+    
+    .Example
+        Usage:
+        Single Users
+            Add User Right "Log on as a service" for CONTOSO\User:
+            .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeServiceLogonRight
+            
+            Add User Right "Log on as a batch job" for CONTOSO\User:
+            .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeBatchLogonRight
+
+            Remove User Right "Log on as a batch job" for CONTOSO\User:
+            .\Set-UserRights.ps1 -RemoveRight -Username CONTOSO\User -UserRight SeBatchLogonRight
+            
+            Add User Right "Allow log on locally" for current user:
+            .\Set-UserRights.ps1 -AddRight -UserRight SeInteractiveLogonRight
+
+            Remove User Right "Allow log on locally" for current user:
+            .\Set-UserRights.ps1 -RemoveRight -UserRight SeInteractiveLogonRight
+        
+        Multiple Users / Services / Computers
+            Add User Right "Log on as a service" and "Log on as a batch job" for CONTOSO\User and run on, local machine and SQL.contoso.com:
+            .\Set-UserRights.ps1 -AddRight -UserRight SeServiceLogonRight, SeBatchLogonRight -ComputerName $env:COMPUTERNAME, SQL.contoso.com -UserName CONTOSO\User1, CONTOSO\User2
+    
+    .Notes
+        Original Creator: Bill Loytty (weloytty)
+        Based on this script found here: https://github.com/weloytty/QuirkyPSFunctions/blob/ab4b02f9cc05505eee97d2f744f4c9c798143af1/Source/Users/Grant-LogOnAsService.ps1
+        I modified to my own needs: https://github.com/blakedrumm/SCOM-Scripts-and-SQL/blob/master/Powershell/General%20Functions/Set-UserRights.ps1
+        
+        My blog post: https://blakedrumm.com/blog/set-and-check-user-rights-assignment/
+        
+        Author: Blake Drumm (blakedrumm@microsoft.com)
+        First Created on: January 5th, 2022
+        Last Modified on: October 12th, 2022
+    #>
+    param
+    (
+        [Parameter(Position = 0,
+                   HelpMessage = 'You want to Add a user right.')]
+        [Alias('add')]
+        [switch]$AddRight,
+        [Parameter(Position = 1)]
+        [Alias('computer')]
+        [array]$ComputerName,
+        [Parameter(Position = 2,
+                   HelpMessage = 'You want to Remove a user right.')]
+        [switch]$RemoveRight,
+        [Parameter(Position = 3)]
+        [Alias('user')]
+        [array]$Username,
+        [Parameter(Mandatory = $false,
+                   Position = 4)]
+        [ValidateSet('SeNetworkLogonRight', 'SeBackupPrivilege', 'SeChangeNotifyPrivilege', 'SeSystemtimePrivilege', 'SeCreatePagefilePrivilege', 'SeDebugPrivilege', 'SeRemoteShutdownPrivilege', 'SeAuditPrivilege', 'SeIncreaseQuotaPrivilege', 'SeIncreaseBasePriorityPrivilege', 'SeLoadDriverPrivilege', 'SeBatchLogonRight', 'SeServiceLogonRight', 'SeInteractiveLogonRight', 'SeSecurityPrivilege', 'SeSystemEnvironmentPrivilege', 'SeProfileSingleProcessPrivilege', 'SeSystemProfilePrivilege', 'SeAssignPrimaryTokenPrivilege', 'SeRestorePrivilege', 'SeShutdownPrivilege', 'SeTakeOwnershipPrivilege', 'SeDenyNetworkLogonRight', 'SeDenyInteractiveLogonRight', 'SeUndockPrivilege', 'SeManageVolumePrivilege', 'SeRemoteInteractiveLogonRight', 'SeImpersonatePrivilege', 'SeCreateGlobalPrivilege', 'SeIncreaseWorkingSetPrivilege', 'SeTimeZonePrivilege', 'SeCreateSymbolicLinkPrivilege', 'SeDelegateSessionUserImpersonatePrivilege', 'SeMachineAccountPrivilege', 'SeTrustedCredManAccessPrivilege', 'SeTcbPrivilege', 'SeCreateTokenPrivilege', 'SeCreatePermanentPrivilege', 'SeDenyBatchLogonRight', 'SeDenyServiceLogonRight', 'SeDenyRemoteInteractiveLogonRight', 'SeEnableDelegationPrivilege', 'SeLockMemoryPrivilege', 'SeRelabelPrivilege', 'SeSyncAgentPrivilege', IgnoreCase = $true)]
+        [Alias('right')]
+        [array]$UserRight
+    )
+    BEGIN
+    {
+        
+        Write-Output '==================================================================='
+        Write-Output '==========================  Start of Script ======================='
+        Write-Output '==================================================================='
+        
+        $checkingpermission = "Checking for elevated permissions..."
+        $scriptout += $checkingpermission
+        Write-Output $checkingpermission
+        if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+        {
+            $currentPath = $myinvocation.mycommand.definition
+            $nopermission = "Insufficient permissions to run this script. Attempting to open the PowerShell script ($currentPath) as administrator."
+            $scriptout += $nopermission
+            Write-Warning $nopermission
+            # We are not running "as Administrator" - so relaunch as administrator
+            # ($MyInvocation.Line -split '\.ps1[\s\''\"]\s*', 2)[-1]
+            Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+            break
+        }
+        else
+        {
+            $permissiongranted = " Currently running as administrator - proceeding with script execution..."
+            Write-Output $permissiongranted
+        }
+        
+        Function Time-Stamp
+        {
+            $TimeStamp = Get-Date -UFormat "%B %d, %Y @ %r"
+            return "$TimeStamp - "
+        }
+    }
+    PROCESS
+    {
+        function Inner-SetUserRights
+        {
+            param
+            (
+                [Parameter(Position = 0,
+                           HelpMessage = 'You want to Add a user right.')]
+                [Alias('add')]
+                [switch]$AddRight,
+                [Parameter(Position = 1)]
+                [Alias('computer')]
+                [array]$ComputerName,
+                [Parameter(Position = 2,
+                           HelpMessage = 'You want to Remove a user right.')]
+                [switch]$RemoveRight,
+                [Parameter(Position = 3)]
+                [Alias('user')]
+                [array]$Username,
+                [Parameter(Mandatory = $false,
+                           Position = 4)]
+                [Alias('right')]
+                [array]$UserRight
+            )
+            if (!$UserRight)
+            {
+                Write-Warning "Inner Function: Unable to continue because you did not supply the '-UserRight' parameter."
+                break
+            }
+            if (!$AddRight -and !$RemoveRight)
+            {
+                Write-Warning "Inner Function: Unable to continue because you did not supply the '-AddRight' or '-RemoveRight' switches."
+                break
+            }
+            elseif ($AddRight -and $RemoveRight)
+            {
+                Write-Warning "Inner Function: Unable to continue because you used both the '-AddRight' and '-RemoveRight' switches. Run again with just one of these present, either Add or Remove."
+                break
+            }
+            elseif ($AddRight)
+            {
+                Write-Verbose "Inner Function: Detected -AddRight switch in execution."
+                $ActionType = 'Adding'
+            }
+            elseif ($RemoveRight)
+            {
+                Write-Verbose "Inner Function: Detected -RemoveRight switch in execution."
+                $ActionType = 'Removing'
+            }
+            else
+            {
+                Write-Warning "Something is wrong, detected logic is broken before executing main function. Exiting."
+                break
+            }
+            Function Time-Stamp
+            {
+                $TimeStamp = Get-Date -UFormat "%B %d, %Y @ %r"
+                return "$TimeStamp - "
+            }
+            $tempPath = [System.IO.Path]::GetTempPath()
+            $import = Join-Path -Path $tempPath -ChildPath "import.inf"
+            if (Test-Path $import) { Remove-Item -Path $import -Force }
+            $export = Join-Path -Path $tempPath -ChildPath "export.inf"
+            if (Test-Path $export) { Remove-Item -Path $export -Force }
+            $secedt = Join-Path -Path $tempPath -ChildPath "secedt.sdb"
+            if (Test-Path $secedt) { Remove-Item -Path $secedt -Force }
+            $Error.Clear()
+            try
+            {
+                foreach ($right in $UserRight)
+                {
+                    $UserLogonRight = switch ($right)
+                    {
+                        "SeBatchLogonRight"                 { "Log on as a batch job (SeBatchLogonRight)" }
+                        "SeDenyBatchLogonRight"             { "Deny log on as a batch job (SeDenyBatchLogonRight)" }
+                        "SeDenyInteractiveLogonRight"       { "Deny log on locally (SeDenyInteractiveLogonRight)" }
+                        "SeDenyNetworkLogonRight"           { "Deny access to this computer from the network (SeDenyNetworkLogonRight)" }
+                        "SeDenyRemoteInteractiveLogonRight" { "Deny log on through Remote Desktop Services (SeDenyRemoteInteractiveLogonRight)" }
+                        "SeDenyServiceLogonRight"           { "Deny log on as a service (SeDenyServiceLogonRight)" }
+                        "SeInteractiveLogonRight"           { "Allow log on locally (SeInteractiveLogonRight)" }
+                        "SeNetworkLogonRight"               { "Access this computer from the network (SeNetworkLogonRight)" }
+                        "SeRemoteInteractiveLogonRight"     { "Allow log on through Remote Desktop Services (SeRemoteInteractiveLogonRight)" }
+                        "SeServiceLogonRight"               { "Log on as a service (SeServiceLogonRight)" }
+                        Default                             { "($right)" }
+                    }
+                    Write-Output ("$(Time-Stamp)$ActionType `"$UserLogonRight`" right for user account: '$Username' on host: '$env:COMPUTERNAME'")
+                    if ($Username -match "^S-.*-.*-.*$|^S-.*-.*-.*-.*-.*-.*$|^S-.*-.*-.*-.*-.*$|^S-.*-.*-.*-.*$")
+                    {
+                        $sid = $Username
+                    }
+                    else
+                    {
+                        $sid = ((New-Object System.Security.Principal.NTAccount($Username)).Translate([System.Security.Principal.SecurityIdentifier])).Value
+                    }
+                    secedit /export /cfg $export | Out-Null
+                    #Change the below to any right you would like
+                    $sids = (Select-String $export -Pattern "$right").Line
+                    if ($ActionType -eq 'Adding')
+                    {
+                        # If right has no value it needs to be added
+                        if ($sids -eq $null)
+                        {
+                            $sids = "$right = *$sid"
+                            $sidList = $sids
+                        }
+                        else
+                        {
+                            $sidList = "$sids,*$sid"
+                        }
+                    }
+                    elseif ($ActionType -eq 'Removing')
+                    {
+                        $sidList = "$($sids.Replace("*$sid", '').Replace("$Username", '').Replace(",,", ',').Replace("= ,", '= '))"
+                    }
+                    Write-Verbose $sidlist
+                    foreach ($line in @("[Unicode]", "Unicode=yes", "[System Access]", "[Event Audit]", "[Registry Values]", "[Version]", "signature=`"`$CHICAGO$`"", "Revision=1", "[Profile Description]", "Description=$ActionType `"$UserLogonRight`" right for user account: $Username", "[Privilege Rights]", "$sidList"))
+                    {
+                        Add-Content $import $line
+                    }
+                }
+                
+                secedit /import /db $secedt /cfg $import | Out-Null
+                secedit /configure /db $secedt | Out-Null
+                gpupdate /force | Out-Null
+                Write-Verbose "The script will not delete the following paths due to running in verbose mode, please remove these files manually if needed:"
+                Write-Verbose "`$import : $import"
+                Write-Verbose "`$export : $export"
+                Write-Verbose "`$secedt : $secedt"
+                
+                if ($VerbosePreference.value__ -eq 0)
+                {
+                    Remove-Item -Path $import -Force | Out-Null
+                    Remove-Item -Path $export -Force | Out-Null
+                    Remove-Item -Path $secedt -Force | Out-Null
+                }
+            }
+            catch
+            {
+                Write-Output ("$(Time-Stamp)Failure occurred while granting `"$right`" to user account: '$Username' on host: '$env:COMPUTERNAME'")
+                Write-Output "Error Details: $error"
+            }
+        }
+        $InnerSetUserRightFunctionScript = "function Inner-SetUserRights { ${function:Inner-SetUserRights} }"
+        function Set-UserRights
+        {
+            param
+            (
+                [Parameter(Position = 0,
+                           HelpMessage = 'You want to Add a user right.')]
+                [Alias('add')]
+                [switch]$AddRight,
+                [Parameter(Position = 1)]
+                [Alias('computer')]
+                [array]$ComputerName,
+                [Parameter(Position = 2,
+                           HelpMessage = 'You want to Remove a user right.')]
+                [switch]$RemoveRight,
+                [Parameter(Position = 3)]
+                [Alias('user')]
+                [array]$Username,
+                [Parameter(Mandatory = $false,
+                           Position = 4)]
+                [ValidateSet('SeNetworkLogonRight', 'SeBackupPrivilege', 'SeChangeNotifyPrivilege', 'SeSystemtimePrivilege', 'SeCreatePagefilePrivilege', 'SeDebugPrivilege', 'SeRemoteShutdownPrivilege', 'SeAuditPrivilege', 'SeIncreaseQuotaPrivilege', 'SeIncreaseBasePriorityPrivilege', 'SeLoadDriverPrivilege', 'SeBatchLogonRight', 'SeServiceLogonRight', 'SeInteractiveLogonRight', 'SeSecurityPrivilege', 'SeSystemEnvironmentPrivilege', 'SeProfileSingleProcessPrivilege', 'SeSystemProfilePrivilege', 'SeAssignPrimaryTokenPrivilege', 'SeRestorePrivilege', 'SeShutdownPrivilege', 'SeTakeOwnershipPrivilege', 'SeDenyNetworkLogonRight', 'SeDenyInteractiveLogonRight', 'SeUndockPrivilege', 'SeManageVolumePrivilege', 'SeRemoteInteractiveLogonRight', 'SeImpersonatePrivilege', 'SeCreateGlobalPrivilege', 'SeIncreaseWorkingSetPrivilege', 'SeTimeZonePrivilege', 'SeCreateSymbolicLinkPrivilege', 'SeDelegateSessionUserImpersonatePrivilege', 'SeMachineAccountPrivilege', 'SeTrustedCredManAccessPrivilege', 'SeTcbPrivilege', 'SeCreateTokenPrivilege', 'SeCreatePermanentPrivilege', 'SeDenyBatchLogonRight', 'SeDenyServiceLogonRight', 'SeDenyRemoteInteractiveLogonRight', 'SeEnableDelegationPrivilege', 'SeLockMemoryPrivilege', 'SeRelabelPrivilege', 'SeSyncAgentPrivilege', IgnoreCase = $true)]
+                [Alias('right')]
+                [array]$UserRight
+            )
+            if (!$Username)
+            {
+                $Username = "$env:USERDOMAIN`\$env:USERNAME"
+            }
+            if (!$UserRight)
+            {
+                Write-Warning "Main Function: Unable to continue because you did not supply the '-UserRight' parameter."
+                break
+            }
+            if (!$AddRight -and !$RemoveRight)
+            {
+                Write-Warning "Main Function: Unable to continue because you did not supply the '-AddRight' or '-RemoveRight' switches."
+                break
+            }
+            elseif ($AddRight -and $RemoveRight)
+            {
+                Write-Warning "Main Function: Unable to continue because you used both the '-AddRight' and '-RemoveRight' switches. Run again with just one of these present, either Add or Remove."
+                break
+            }
+            elseif ($AddRight)
+            {
+                Write-Verbose "Main Function: Detected -AddRight switch in execution."
+                $ActionType = 'Adding'
+            }
+            elseif ($RemoveRight)
+            {
+                Write-Verbose "Main Function: Detected -RemoveRight switch in execution."
+                $ActionType = 'Removing'
+            }
+            if (!$ComputerName)
+            {
+                $ComputerName = $env:ComputerName
+            }
+            foreach ($user in $Username)
+            {
+                foreach ($right in $UserRight)
+                {
+                    foreach ($computer in $ComputerName)
+                    {
+                        if ($computer -match $env:COMPUTERNAME)
+                        {
+                            Inner-SetUserRights -UserRight $right -Username $user -AddRight:$AddRight -RemoveRight:$RemoveRight
+                        }
+                        else
+                        {
+                            Invoke-Command -ComputerName $Computer -Script {
+                                param ($script,
+                                    [string]$Username,
+                                    [Parameter(Mandatory = $true)]
+                                    [array]$UserRight,
+                                    $AddRight,
+                                    $RemoveRight,
+                                    $VerbosePreference)
+                                . ([ScriptBlock]::Create($script))
+                                $VerbosePreference = $VerbosePreference
+                                $Error.Clear()
+                                try
+                                {
+                                    if ($VerbosePreference -eq 0)
+                                    {
+                                        Inner-SetUserRights -Username $Username -UserRight $UserRight -AddRight:$AddRight -RemoveRight:$RemoveRight
+                                    }
+                                    else
+                                    {
+                                        Inner-SetUserRights -Username $Username -UserRight $UserRight -AddRight:$AddRight -RemoveRight:$RemoveRight -Verbose
+                                    }
+                                }
+                                catch
+                                {
+                                    $info = [PSCustomObject]@{
+                                        Exception = $Error.Exception.Message
+                                        Reason    = $Error.CategoryInfo.Reason
+                                        Target    = $Error.CategoryInfo.TargetName
+                                        Script    = $Error.InvocationInfo.ScriptName
+                                        Line      = $Error.InvocationInfo.ScriptLineNumber
+                                        Column    = $Error.InvocationInfo.OffsetInLine
+                                        Date      = Get-Date
+                                        User      = $env:username
+                                    }
+                                    Write-Warning "$info"
+                                }
+                                
+                            } -ArgumentList $InnerSetUserRightFunctionScript, $user, $right, $AddRight, $RemoveRight, $VerbosePreference
+                        }
+                    }
+                }
+            }
+            
+        }
+        if ($ComputerName -or $Username -or $UserRight -or $RemoveRight)
+        {
+            foreach ($user in $Username)
+            {
+                Set-UserRights -ComputerName $ComputerName -Username $user -UserRight $UserRight -AddRight:$AddRight -RemoveRight:$RemoveRight
+            }
+        }
+        else
+        {
+            
+         <# Edit line 437 to modify the default command run when this script is executed.
+           Example: 
+                Set-UserRights -AddRight -UserRight SeServiceLogonRight, SeBatchLogonRight -ComputerName $env:COMPUTERNAME, SQL.contoso.com -UserName CONTOSO\User1, CONTOSO\User2
+                or
+                Set-UserRights -AddRight -UserRight SeBatchLogonRight -Username S-1-5-11
+                or
+                Set-UserRights -RemoveRight -UserRight SeBatchLogonRight -Username CONTOSO\User2
+                or
+                Set-UserRights -RemoveRight -UserRight SeServiceLogonRight, SeBatchLogonRight -Username CONTOSO\User1
+           #>
+            Set-UserRights
+        }
+    }
+    END
+    {
+        Write-Output "$(Time-Stamp)Script Completed!"
+    }
+}
+
 #---------------------------------------------------------------- Functions Start!
 
 Function Disable-Firewall(){
@@ -10,7 +461,7 @@ Function Disable-Firewall(){
     New-ItemProperty -Path ($regpathWindowsDef + "\Windows Defender") -Name DisableAntiSpyware -Value 1 -PropertyType DWORD -Force | Out-Null
     New-ItemProperty -Path ($regpathWindowsDef + "\Windows Defender") -Name DisableRealtimeMonitoring -Value 1 -PropertyType DWORD -Force | Out-Null
 
-    # Attention
+    #!#!#!#! Attention
     # This needs to be executed before in minimal boot configuration (as Administrator!)
     $regpathControl = 'HKLM:\SYSTEM\CurrentControlSet\Services'
     Set-ItemProperty -Path ($regpathControl+"\Sense") -Name Start -Value 4
@@ -18,7 +469,7 @@ Function Disable-Firewall(){
     Set-ItemProperty -Path ($regpathControl+"\WdNisDrv") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdNisSvc") -Name Start -Value 4
     Set-ItemProperty -Path ($regpathControl+"\WdBoot") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4 -Force
+    Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4
 
     Write-Host "Disable schedule tasks for Windows Defender"
     Get-ScheduledTask “Windows Defender Cache Maintenance” | Disable-ScheduledTask | Select-Object -Property Actions,State
@@ -117,34 +568,36 @@ function Check-Hash(){
 
 }
 
+# I changed some permissions to Full Access (/grant Everyone:F)
+
 function Reset-File-Permission(){
     Param(
         $filePath
     )
-    Write-Host "[*] Reseting Permission $filePath"
+    Write-Host "[*] Reseting File Permission $filePath"
 
     if($filePath -eq "C:\Program Files\File Permissions Service\filepermservice.exe"){
-        icacls.exe $filePath /grant Everyone:F | Out-Null
-        return
-    }
-    if ($filePath -eq "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"){
-        icacls.exe $filePath /grant  BUILTIN\Users:F | Out-Null
-        return
-    }
-    if ($filePath -eq "C:\Program Files\Unquoted Path Service") {
         icacls.exe $filePath /grant BUILTIN\Users:F | Out-Null
         return
     }
+    if ($filePath -eq "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"){
+        icacls.exe $filePath /grant "BUILTIN\Users:(OI)(CI)F" /T | Out-Null
+        return
+    }
+    if ($filePath -eq "C:\Program Files\Unquoted Path Service") {
+        icacls.exe $filePath /grant "BUILTIN\Users:(OI)(CI)F" /T | Out-Null
+        return
+    }
     if ($filePath -eq "C:\Program Files\Autorun Program\program.exe"){
-        icacls.exe $filePath /grant Everyone:F | Out-Null
+        icacls.exe $filePath /grant BUILTIN\Users:F | Out-Null
         return
     }
     if ($filePath -eq "C:\Windows\Panther\Unattend.xml") {
-        icacls.exe $filePath /grant Everyone:R | Out-Null
+        icacls.exe $filePath /grant BUILTIN\Users:R | Out-Null
         return
     }
     if ($filePath -eq "C:\PrivEsc\AdminPaint.lnk") {
-        icacls.exe $filePath /grant Everyone:R | Out-Null
+        icacls.exe $filePath /grant BUILTIN\Users:R | Out-Null
         return
     }
     if ($filePath -eq "C:\DevTools\CleanUp.ps1") {
@@ -511,6 +964,7 @@ Function Create-Service{
     return
 }
 
+#\#\ Need to verify this function #\#\
 Function Set-ServicePermission(){
     Param(
         $serviceName,
@@ -664,11 +1118,12 @@ Set-User -user $user -password $password
 $groupName = "Remote Management Users"
 Set-Group -userName $user -groupName $groupName
 
-.\Set-UserRights.ps1 -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
+Set-UserRights -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
 
 # Enable Remote Desktop Services
 Write-Host "[*] Enable Remote Desktop"
-Restart-Service -Force -DisplayName "Remote Desktop Services"
+#Restart-Service -Force -DisplayName "Remote Desktop Services"
+Set-ItemProperty -Path ‘HKLM:\System\CurrentControlSet\Control\Terminal Server’ -name “fDenyTSConnections” -value 0
 
 # Enable Remote Management Services
 if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"){
@@ -705,7 +1160,9 @@ Set-Folder -folder $folder
 # check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
 Set-PSReadlineOption -HistorySavePath "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
-icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Everyone:R
+icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Users:R
+
+#!#!#!# Need to add something to PSHistoryFile #!#!#!#
 
 Write-Host "[+] Initial setup complete."
 
@@ -731,7 +1188,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath 
 
 # Create and Start Service
 $service = "svcdll"
@@ -764,7 +1221,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath 
 
 # Create and Start Service
 $service = "daclsvc"
@@ -796,11 +1253,13 @@ Set-Folder -folder $path
 Move-File -file $inputFile -path $path
             
 # Reset Permission to file
-$fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+$newfullPath = "C:\Program Files\Unquoted Path Service"
+Reset-File-Permission -filePath $newfullPath
+
 
 # Create and Start Service
 $service = "unquotedsvc"
+$fullPath = $path+$inputFile
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "Unquoted Path Service"
 Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
 Start-LocalService -serviceName $service
@@ -829,15 +1288,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
-
-# Create and Start Service
-$service = "regsvc"
-Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "Insecure Registry Service"
-Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
-
-# Start Service
-Start-LocalService -serviceName $service
+Reset-File-Permission -filePath $fullPath
 
 # Change registry permission
 Write-Host "[*] Changing registry permissions for regsvc.."
@@ -853,6 +1304,33 @@ New-Item -Path $registryPath -Force | Out-Null
 
 # Set registry value
 Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $valueData 
+
+# Specify the registry key path
+$registryKeyPath = "HKLM:\SYSTEM\ControlSet001\services\regsvc"
+
+# Get the current ACL (Access Control List) for the registry key
+$acl = Get-Acl -Path $registryKeyPath
+
+# Define the rule for the NT Authority\Interactive group
+$rule = New-Object System.Security.AccessControl.RegistryAccessRule(
+    "NT AUTHORITY\INTERACTIVE", # Identity
+    "FullControl",              # Permissions
+    "Allow"                     # Access Control Type
+)
+
+# Add the rule to the ACL
+$acl.AddAccessRule($rule)
+
+# Set the modified ACL back to the registry key
+Set-Acl -Path $registryKeyPath -AclObject $acl
+
+# Create and Start Service
+$service = "regsvc"
+Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "Insecure Registry Service"
+Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
+
+# Start Service
+Start-LocalService -serviceName $service
 
 Write-Host "[+] Services (Registry) configuration complete."
 Write-Host "----------------------------------------"
@@ -880,7 +1358,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath
 
 # Create and Start Service
 $service = "filepermsvc"
@@ -907,7 +1385,7 @@ Move-File -file $inputFile -path $path
 
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath
 
 Write-Host "[*] Adding program to run at startup via registry"
 $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
@@ -917,7 +1395,7 @@ Write-Host "[+] Registry (Autorun) configuration complete."
 Write-Host "----------------------------------------"
 
 ###########################################################################################
-# This one I need to research more! #
+# I couldn't find a way until now to use this vulnerability #
 #### Registry (AlwaysInstallElevated) ####
 # Write-Host "----------------------------------------"
 # Write-Host "[*] Configuring Registry (AlwaysInstallElevated)"
@@ -956,7 +1434,7 @@ $valueData = "password123"
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 
 $valueName = "AutoAdminLogon"
-$valueData = 1
+$valueData = 0
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 Write-Host "[+] Password Mining (Registry) configuration complete."
 Write-Host "----------------------------------------"
@@ -983,7 +1461,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath
 Write-Host "[+] Password Mining (Configuration Files) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -1009,7 +1487,7 @@ Move-File -file $inputFile -path $path
             
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath
 
 schtasks.exe /Create /F /RU SYSTEM /SC Minute /TN "CleanUp" /TR "powershell.exe -exec bypass -nop C:\DevTools\CleanUp.ps1"  | Out-Null
 
@@ -1022,7 +1500,7 @@ Write-Host "----------------------------------------"
 Write-Host "[*] Configuring Startup Applications"
 
 $fullPath = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath
 
 Write-Host "[+] Startup Applications configuration complete."
 Write-Host "----------------------------------------"
@@ -1086,7 +1564,7 @@ Move-File -file $inputFile -path $path
 
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath -ClearCentralAccessPolicy -Confirm
+Reset-File-Permission -filePath $fullPath 
 
 ###########################################################################################
 # Creating savecred.bat #
@@ -1107,7 +1585,7 @@ Set-Folder -folder $path
 Move-File -file $inputFile -path $path
 
 
-#!#!#!#!#!#!#!#! Remember to change this users #!#!#!#!#!#!#!#!#!#!
+#!#!#!#!#!#!#!#! Remember to change this t1rdus user #!#!#!#!#!#!#!#!#!#!
 icacls.exe C:\PrivEsc\savecred.bat /grant t1rdus:RX | Out-Null
 
 #schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\"" 
@@ -1139,8 +1617,10 @@ Write-Host "#### [-] Cleaning up Locally ####"
 # CleanUp-Local -inputFile "lpe.bat"
 # CleanUp-Local -inputFile "program.exe"
 # CleanUp-Local -inputFile "savecred.bat"
-CleanUp-Local -inputFile "Unattend.xml"
+# CleanUp-Local -inputFile "Unattend.xml"
+Move-File -file "Unattend.xml" -path "C:\Temp"
 # CleanUp-Local -inputFile "unquotedpathservice.exe"
+
 
 Write-Host "`n###########################################################################################"
 Write-Host "[+] Configuration completed successfully."
