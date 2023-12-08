@@ -72,9 +72,9 @@ I think the person who will use it will discover how to use some commands in ord
 
 ## Users
 
-Use t1rdus user to escalate your privilege through the machine
+Use douglas user to escalate your privilege through the machine
 
-user: t1rdus
+user: douglas
 password: password123
 
 Groups: Remote Desktop and Remote Management (access via evil-winrm)
