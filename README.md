@@ -71,23 +71,34 @@ I'm going to explain how to use it, but as a general way.
 I think the person who will use it will discover how to use some commands in order to privilege escalate this machine as its own pace.
 
 ## Users
+
+Use t1rdus user to escalate your privilege through the machine
+
 user: t1rdus
 password: password123
+
 Groups: Remote Desktop and Remote Management (access via evil-winrm)
 
 I *STRONGLY RECOMMEND* use remote desktop access as your first access and them you can use a reverse shell (created via msfvenom) to your machine own.
+
 I had some problems using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) and other types of executables via evil-winrm.
 
 user: fakeadmin
 password: fakeadmin
+
 Vulnerability: SeImpersonatePrivilage
+
 Train using [GodPotato](https://github.com/BeichenDream/GodPotato)
 
 user: backupuser
 password: backup1
+
 Member of Backup Operators
+
 Grab SAM and SYSTEM FILES
+
 Use impacket-secretsdump to access the machine via [Pass the Hash](https://en.wikipedia.org/wiki/Pass_the_hash) technique.
+
 Then use impacket-psexec, evil-winrm or any kind of tool that you can use the PtH.
 
 

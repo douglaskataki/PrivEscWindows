@@ -1074,8 +1074,8 @@ Write-Host "[*] Create system environment variable for password"
 [Environment]::SetEnvironmentVariable("AdminP@ssword", "password123", [EnvironmentVariableTarget]::Machine)
 
 # Create users
-## t1rdus
-$user = 't1rdus'
+## douglas
+$user = 'douglas'
 $password = "password123"
 
 Set-User -user $user -password $password
@@ -1585,8 +1585,8 @@ Set-Folder -folder $path
 Move-File -file $inputFile -path $path
 
 
-#!#!#!#!#!#!#!#! Remember to change this t1rdus user #!#!#!#!#!#!#!#!#!#!
-icacls.exe C:\PrivEsc\savecred.bat /grant t1rdus:RX | Out-Null
+#!#!#!#!#!#!#!#! Remember to change this douglas user #!#!#!#!#!#!#!#!#!#!
+icacls.exe C:\PrivEsc\savecred.bat /grant douglas:RX | Out-Null
 
 #schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\"" 
 # Task action script path
@@ -1599,7 +1599,7 @@ $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c $scriptPath"
 $trigger = New-ScheduledTaskTrigger -AtLogon
 
 # Task principal (Run as the specified user)
-$user = "t1rdus"
+$user = "douglas"
 $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive
 
 # Register the scheduled task
