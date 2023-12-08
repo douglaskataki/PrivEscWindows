@@ -86,16 +86,15 @@ I had some problems using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree
 
 2) fakeadmin
 
-user: fakeadmin
-password: fakeadmin
+Creds: fakeadmin:fakeadmin
 
 Vulnerability: SeImpersonatePrivilage
 
 Train using [GodPotato](https://github.com/BeichenDream/GodPotato)
 
 3) backupuser
-user: backupuser
-password: backup1
+
+Creds: backupuser:backup1
 
 Member of Backup Operators
 
