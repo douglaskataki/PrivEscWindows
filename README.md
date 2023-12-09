@@ -110,7 +110,7 @@ Creds: `fakeadmin:fakeadmin`
 
 Vulnerability: SeImpersonatePrivilage
 
-Train using [GodPotato](https://github.com/BeichenDream/GodPotato)
+Use [GodPotato](https://github.com/BeichenDream/GodPotato)
 
 3) backupuser
 
