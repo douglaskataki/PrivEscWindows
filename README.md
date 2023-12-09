@@ -4,6 +4,11 @@ Sorry guys, I don't know much from Powershell Scripting (still learning) and bec
 Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blakedrumm](github.com/blakedrumm), they made scripts that I could use as bases for my own.
 And last, but not least, [](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
 
+# TODO
+
+- [] History File
+- [] PrintSpoofer attack
+
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/pt-br/windows/downloads/virtual-machines/
 
