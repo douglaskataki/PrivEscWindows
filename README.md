@@ -5,12 +5,12 @@ Sorry guys, I don't know much from Powershell Scripting (still learning) and bec
 
 Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blakedrumm](github.com/blakedrumm), they made scripts that I could use as bases for my own.
 
-And last, but not least, [](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
+And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
 
 # TODO
 
-- [ ] History File
-- [ ] PrintSpoofer attack
+- [ ] History File with some information
+- [ ] PrintSpoofer Privilege Escalation
 
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/pt-br/windows/downloads/virtual-machines/
@@ -20,13 +20,18 @@ We need to enable our machine to execute scripts.
 To do that, we will follow this instructions (as user User, which is the default one):
 
 1) Go to Windows Security > Virus & Threat Protection > Virus & Threat protection settings and click in Manage
-2) *Turn off* the following settings: Real-time protection, Cloud-delivery protection, Automatic sample submission and tamper protection.
+
+!["Windows Security Image"](img/windows_protection.png)
+
+2) *Turn off* the following settings: **Real-time protection, Cloud-delivery protection, Automatic sample submission and tamper protection**.
 3) Now, run Powershell as *Administrator*.
 4) Execute this following command as Administrator (in order to execute scripts in Powershell):
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
 ```
+
+![Powershell Bypass](img/scriptPowershell.png)
 
 5) Change in power setting the time to turn off the machine (by default is 5 min).
 
@@ -36,6 +41,8 @@ Until now, I couldn't find anyway to automate this task. So, just follow this in
 1) Copy the content from minimal.ps1 to a file named minimal and save it on Desktop.
 2) Type msconfig in windows search bar and click on System Configuration.
 3) In Boot tab, set Safe boot and Minimal.
+
+![](img/msconfig.png)
 4) Click Ok and restart your machine.
 5) Open Powershell as *Administrator*.
 6) Change directory to Desktop with the following command:
@@ -71,13 +78,17 @@ cd C:\Users\User\Desktop
 .\setup.ps1
 ```
 
-5) Restart your windows VM, in order to 
+5) Restart your windows VM.
 
 # How to use it this script
 
 I'm going to explain how to use it, but as a general way.
+
 I think the person who will use it will discover how to use some commands in order to privilege escalate this machine as its own pace.
-There is a autologin to User, who is the default user from this machine. I recommend that after reboot, you just sign out as User.
+
+There is an `autologin` to User, who is the default user from this machine. 
+
+**I recommend** that after reboot, you just **sign out** as User.
 
 ## Users
 
@@ -119,7 +130,7 @@ It's the user that we want to get the credentials, hash, ...
 
 # Services
 
-## Insecure Service Permission 
+## Insecure Service Permission
 
 1) Check service daclsvc with accesschk (if it can be modify) and sc (its configuration)
 2) Check its status
@@ -132,7 +143,7 @@ sc query daclsvc
 ```cmd
 sc config daclsvc binpath="C:\Path\to\your\reverse.exe"
 ```
-5) Setup a listener 
+5) Setup a listener
 
 6) Restart/Start this service
 
@@ -155,7 +166,7 @@ In this case, unquoted service is writable
 copy C:\Path\to\your\reverse.exe "C:\Begin of\Path To\Unquoted.exe"
 ```
 
-5) Setup a listener 
+5) Setup a listener
 
 6) Restart/Start the service
 
@@ -180,7 +191,7 @@ reg add HKLM\SYSTEM\CurrentControlSet\services\regsvc /v ImagePath /t REG_EXPAND
 1) Check filepermservice
 2) Stop the service if it is necessary
 3) Copy your reverse shell
-4) Setup a listener 
+4) Setup a listener
 5) Restart/Start the service
 
 # Registry
@@ -193,8 +204,8 @@ reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 ```
 2) Copy your reverse shell to autorun directory
 
-3) Setup a listener 
- 
+3) Setup a listener
+
 4) Restart your machine
 
 ## AlwaysInstallElevated
@@ -242,7 +253,7 @@ cmdkey /list
 
 ## Configuration File
 
-Unattend.xml saved in Pather directory. 
+Unattend.xml saved in Pather directory.
 Even after this script the Windows Machine removed the password in base64, but I saved this file in another directory. Go there and find it!
 
 1) Search recursivily for files with password in it:
@@ -257,7 +268,7 @@ Check for schedules tasks:
 schtasks /query /fo LIST /v
 ```
 
-Or 
+Or
 ```powershell
 Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,TaskPath,State
 ```
@@ -267,4 +278,3 @@ Find it and use the following command to add our reverse shell to be executed.
 ```
 echo C:\Path\For\Our\reverse.exe >> C:\Paths\to\Find\CleanUp.ps1
 ```
-
