@@ -13,7 +13,7 @@ And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.
 - [ ] PrintSpoofer Privilege Escalation
 
 # Download windows 11 dev edition
-Download from this link: https://developer.microsoft.com/pt-br/windows/downloads/virtual-machines/
+Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
 # First, Before anything
 We need to enable our machine to execute scripts.
