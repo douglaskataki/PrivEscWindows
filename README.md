@@ -6,8 +6,8 @@ And last, but not least, [](https://github.com/Tib3rius/) and his setup.bat for 
 
 # TODO
 
-- [] History File
-- [] PrintSpoofer attack
+- [ ] History File
+- [ ] PrintSpoofer attack
 
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/pt-br/windows/downloads/virtual-machines/
