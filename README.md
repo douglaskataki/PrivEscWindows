@@ -86,9 +86,9 @@ I'm going to explain how to use it, but as a general way.
 
 I think the person who will use it will discover how to use some commands in order to privilege escalate this machine as its own pace.
 
-There is an `autologin` to User, who is the default user from this machine. 
+There is an `autologin` to User, who is the default user from this machine and because of this, **I recommend** that after reboot, you just **sign out** as User.
 
-**I recommend** that after reboot, you just **sign out** as User.
+Use [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) as a tool for your learning, but remember to enumerate manually.
 
 ## Users
 
