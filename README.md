@@ -69,6 +69,7 @@ cd C:\Users\User\Desktop
 
 I'm going to explain how to use it, but as a general way.
 I think the person who will use it will discover how to use some commands in order to privilege escalate this machine as its own pace.
+There is a autologin to User, who is the default user from this machine. I recommend that after reboot, you just sign out as User.
 
 ## Users
 

@@ -1619,6 +1619,7 @@ Write-Host "#### [-] Cleaning up Locally ####"
 # CleanUp-Local -inputFile "savecred.bat"
 # CleanUp-Local -inputFile "Unattend.xml"
 Move-File -file "Unattend.xml" -path "C:\Temp"
+icacls.exe "C:\Temp\Unattend.xml" /grant BUILTIN\Users:R 
 # CleanUp-Local -inputFile "unquotedpathservice.exe"
 
 
