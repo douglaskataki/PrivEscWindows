@@ -226,6 +226,12 @@ cmdkey /list
 
 2) Can be found in savecred.bat file
 
+## SAM AND SYSTEM files
+
+1) Can be found in a directory in the system.
+2) After that, transfer them to local machine and extract the users hashes.
+3) Use the PtH technique to escalate your privilege.
+
 ## Configuration File
 
 Unattend.xml saved in Pather directory. 

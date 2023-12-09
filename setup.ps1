@@ -1149,6 +1149,8 @@ $folder = "C:\Program Files\Unquoted Path Service"
 Set-Folder -folder $folder
 $folder = "C:\Program Files\Autorun Program"
 Set-Folder -folder $folder
+$folder = "C:\Windows\Repair"
+Set-Folder -folder $folder
 
 # This is for PS History
 $folder = "$env:APPDATA\Microsoft\Windows\PowerShell\"
