@@ -85,7 +85,7 @@ There is a autologin to User, who is the default user from this machine. I recom
 
 Use douglas user to escalate your privilege through the machine
 
-Creds: douglas:password123
+Creds: `douglas:password123`
 
 Groups: Remote Desktop and Remote Management (access via evil-winrm)
 
@@ -95,7 +95,7 @@ I had some problems using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree
 
 2) fakeadmin
 
-Creds: fakeadmin:fakeadmin
+Creds: `fakeadmin:fakeadmin`
 
 Vulnerability: SeImpersonatePrivilage
 
@@ -103,7 +103,7 @@ Train using [GodPotato](https://github.com/BeichenDream/GodPotato)
 
 3) backupuser
 
-Creds: backupuser:backup1
+Creds: `backupuser:backup1`
 
 Member of Backup Operators
 
