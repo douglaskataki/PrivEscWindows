@@ -15,6 +15,8 @@ And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
+Be careful! The VM will require a minimum of 8GB of RAM and at least 70GB of disk space.
+
 # First, Before anything
 We need to enable our machine to execute scripts.
 To do that, we will follow this instructions (as user User, which is the default one):
