@@ -279,7 +279,7 @@ schtasks /query /fo LIST /v
 
 Or
 ```powershell
-Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,TaskPath,State
+Get-ScheduledTask | select TaskName,State
 ```
 
 There is a file Clean.ps1 which we can modify it (check all of this).
