@@ -103,7 +103,9 @@ Use [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) as a 
 
 1) douglas
 
-Use douglas user to escalate your privilege through the machine
+Use douglas user to escalate your privilege through the machine.
+
+**Note:** You can change `douglas` as another user. Just search for all `douglas` entries in this script and change all of them.
 
 Creds: `douglas:password123`
 
