@@ -43,7 +43,7 @@ Until now, I couldn't find anyway to automate this task. So, just follow this in
 
 ![minimal](img/minimal.png)
 
-2) Type msconfig in windows search bar and click on System Configuration.
+2) Type `msconfig` in windows search bar and click on System Configuration.
 3) In Boot tab, set Safe boot and Minimal.
 
 ![msconfig](img/msconfig.png)
@@ -62,7 +62,7 @@ cd C:\Users\User\Desktop
 .\minimal.ps1
 ```
 
-8) Type msconfig in windows search bar and click on System Configuration
+8) Type `msconfig` in windows search bar and click on System Configuration
 9) In Boot tab, unset Safe boot and Minimal
 10) Click in Ok and Restart. This will restart the machine.
 
@@ -109,9 +109,9 @@ Creds: `douglas:password123`
 
 Groups: Remote Desktop and Remote Management (access via evil-winrm)
 
-I *STRONGLY RECOMMEND* use remote desktop access as your first access and them you can use a reverse shell (created via msfvenom) to your machine own.
+I *STRONGLY RECOMMEND* use remote desktop access as your first access and them you can use a reverse shell (created via msfvenom) to your own machine.
 
-I had some problems using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) and other types of executables via evil-winrm.
+I had "some problems" using [winPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS) and .exe files via evil-winrm, so try use .exe files via the reverse shell spawned.
 
 2) fakeadmin
 
@@ -119,7 +119,7 @@ Creds: `fakeadmin:fakeadmin`
 
 Vulnerability: SeImpersonatePrivilage
 
-Use [GodPotato](https://github.com/BeichenDream/GodPotato)
+Use [GodPotato](https://github.com/BeichenDream/GodPotato) or [CoercedPotato](https://github.com/hackvens/CoercedPotato).
 
 3) backupuser
 
@@ -141,7 +141,7 @@ It's the user that we want to get the credentials, hash, ...
 
 ## Insecure Service Permission
 
-1) Check service daclsvc with accesschk (if it can be modify) and sc (its configuration)
+1) Check service daclsvc with accesschk (if it can be modify) and sc.exe (its configuration)
 2) Check its status
 ```cmd
 sc query daclsvc
@@ -223,7 +223,7 @@ reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 ```cmd
 reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 ```
-2) Create a reverse shell with msi format using msfvenom
+2) Create a .msi reverse shell using msfvenom
 
 3) Set up a listener
 
@@ -262,10 +262,10 @@ cmdkey /list
 
 ## Configuration File
 
-Unattend.xml saved in Pather directory.
+Unattend.xml saved in Panther directory.
 Even after this script the Windows Machine removed the password in base64, but I saved this file in another directory. Go there and find it!
 
-1) Search recursivily for files with password in it:
+1) Search recursively for files with password in it:
 ```cmd
 findstr /si password *.xml *.ini *.txt
 ```
