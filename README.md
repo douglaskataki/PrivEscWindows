@@ -7,10 +7,6 @@ Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blaked
 
 And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
 
-# TODO
-
-- [ ] History File with some information
-
 # Download windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
@@ -271,6 +267,9 @@ Even after this script the Windows Machine removed the password in base64, but I
 ```cmd
 findstr /si password *.xml *.ini *.txt
 ```
+
+## PS-History
+Find user history file, maybe douglas can read it.
 
 # Scheduled Tasks
 

@@ -1162,6 +1162,12 @@ Set-Folder -folder $folder
 # check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
 Set-PSReadlineOption -HistorySavePath "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
+# added fakeadmin credentials to this
+echo "$password = ConvertTo-SecureString "fakeadmin" -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential("fakeadmin", $password)
+Enter-PSSession -ComputerName ComputerName -Credential $cred" > "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
 icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Users:R
 
 #!#!#!# Need to add something to PSHistoryFile #!#!#!#
