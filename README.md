@@ -7,7 +7,7 @@ Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blaked
 
 And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
 
-# Download windows 11 dev edition
+# Download Windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
 Be careful! The VM will require a minimum of 8GB of RAM and at least 70GB of disk space.
