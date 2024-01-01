@@ -1,38 +1,35 @@
 #Requires -RunAsAdministrator
 
-# Enable SMB transfer
- New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name AllowInsecureGuestAuth -Value 1 -PropertyType DWORD -Force
-
 # Thanks for blakedrumm for this script:
 
 Function Set-UserRights(){
     <#
     .Synopsis
         Add and Remove User Right(s) for defined user(s) and computer(s).
-    
+
     .DESCRIPTION
         Add and Remove User Rights via Powershell.
-    
+
     .PARAMETER AddRight
         You want to Add a user right.
-    
+
     .Parameter ComputerName
         Defines the name of the computer where the user right should be granted. This can be multiple values, comma seperated.
         Default is the local computer on which the script is run.
-    
+
     .PARAMETER RemoveRight
         You want to Remove a user right.
-    
+
     .Parameter Username
         Defines the Username under which the service should run. This can be multiple values, comma seperated.
         Use the form: domain\Username.
         Default is the user under which the script is run.
-    
+
     .PARAMETER UserRight
         Defines the User Right you want to set. This can be multiple values, comma seperated.
         Name of the right you want to add to: SeServiceLogonRight
         There is no default for this argument
-        
+
         All of the Options you can use:
             Replace a process level token (SeAssignPrimaryTokenPrivilege)
             Generate security audits (SeAuditPrivilege)
@@ -79,36 +76,36 @@ Function Set-UserRights(){
             Change the time zone (SeTimeZonePrivilege)
             Access Credential Manager as a trusted caller (SeTrustedCredManAccessPrivilege)
             Remove computer from docking station (SeUndockPrivilege)
-    
+
     .Example
         Usage:
         Single Users
             Add User Right "Log on as a service" for CONTOSO\User:
             .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeServiceLogonRight
-            
+
             Add User Right "Log on as a batch job" for CONTOSO\User:
             .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeBatchLogonRight
 
             Remove User Right "Log on as a batch job" for CONTOSO\User:
             .\Set-UserRights.ps1 -RemoveRight -Username CONTOSO\User -UserRight SeBatchLogonRight
-            
+
             Add User Right "Allow log on locally" for current user:
             .\Set-UserRights.ps1 -AddRight -UserRight SeInteractiveLogonRight
 
             Remove User Right "Allow log on locally" for current user:
             .\Set-UserRights.ps1 -RemoveRight -UserRight SeInteractiveLogonRight
-        
+
         Multiple Users / Services / Computers
             Add User Right "Log on as a service" and "Log on as a batch job" for CONTOSO\User and run on, local machine and SQL.contoso.com:
             .\Set-UserRights.ps1 -AddRight -UserRight SeServiceLogonRight, SeBatchLogonRight -ComputerName $env:COMPUTERNAME, SQL.contoso.com -UserName CONTOSO\User1, CONTOSO\User2
-    
+
     .Notes
         Original Creator: Bill Loytty (weloytty)
         Based on this script found here: https://github.com/weloytty/QuirkyPSFunctions/blob/ab4b02f9cc05505eee97d2f744f4c9c798143af1/Source/Users/Grant-LogOnAsService.ps1
         I modified to my own needs: https://github.com/blakedrumm/SCOM-Scripts-and-SQL/blob/master/Powershell/General%20Functions/Set-UserRights.ps1
-        
+
         My blog post: https://blakedrumm.com/blog/set-and-check-user-rights-assignment/
-        
+
         Author: Blake Drumm (blakedrumm@microsoft.com)
         First Created on: January 5th, 2022
         Last Modified on: October 12th, 2022
@@ -136,11 +133,11 @@ Function Set-UserRights(){
     )
     BEGIN
     {
-        
+
         Write-Output '==================================================================='
         Write-Output '==========================  Start of Script ======================='
         Write-Output '==================================================================='
-        
+
         $checkingpermission = "Checking for elevated permissions..."
         $scriptout += $checkingpermission
         Write-Output $checkingpermission
@@ -160,7 +157,7 @@ Function Set-UserRights(){
             $permissiongranted = " Currently running as administrator - proceeding with script execution..."
             Write-Output $permissiongranted
         }
-        
+
         Function Time-Stamp
         {
             $TimeStamp = Get-Date -UFormat "%B %d, %Y @ %r"
@@ -287,7 +284,7 @@ Function Set-UserRights(){
                         Add-Content $import $line
                     }
                 }
-                
+
                 secedit /import /db $secedt /cfg $import | Out-Null
                 secedit /configure /db $secedt | Out-Null
                 gpupdate /force | Out-Null
@@ -295,7 +292,7 @@ Function Set-UserRights(){
                 Write-Verbose "`$import : $import"
                 Write-Verbose "`$export : $export"
                 Write-Verbose "`$secedt : $secedt"
-                
+
                 if ($VerbosePreference.value__ -eq 0)
                 {
                     Remove-Item -Path $import -Force | Out-Null
@@ -414,13 +411,13 @@ Function Set-UserRights(){
                                     }
                                     Write-Warning "$info"
                                 }
-                                
+
                             } -ArgumentList $InnerSetUserRightFunctionScript, $user, $right, $AddRight, $RemoveRight, $VerbosePreference
                         }
                     }
                 }
             }
-            
+
         }
         if ($ComputerName -or $Username -or $UserRight -or $RemoveRight)
         {
@@ -431,9 +428,9 @@ Function Set-UserRights(){
         }
         else
         {
-            
+
          <# Edit line 437 to modify the default command run when this script is executed.
-           Example: 
+           Example:
                 Set-UserRights -AddRight -UserRight SeServiceLogonRight, SeBatchLogonRight -ComputerName $env:COMPUTERNAME, SQL.contoso.com -UserName CONTOSO\User1, CONTOSO\User2
                 or
                 Set-UserRights -AddRight -UserRight SeBatchLogonRight -Username S-1-5-11
@@ -476,7 +473,7 @@ Function Disable-Firewall(){
     Get-ScheduledTask “Windows Defender Cleanup” | Disable-ScheduledTask | Select-Object -Property Actions,State
     Get-ScheduledTask “Windows Defender Scheduled Scan” | Disable-ScheduledTask | Select-Object -Property Actions,State
     Get-ScheduledTask “Windows Defender Verification” | Disable-ScheduledTask | Select-Object -Property Actions,State
-    
+
 }
 
 Function Set-User(){
@@ -493,12 +490,12 @@ Function Set-User(){
         Write-Host "[*] Creating $userName : $password"
         $Password = ConvertTo-SecureString $password -AsPlainText -Force
         New-LocalUser $userName -Password $Password | Out-Null
-    
-        
+
+
     }Else {
-        Write-Host "$userName exists!" 
+        Write-Host "$userName exists!"
     }
-    
+
 }
 
 Function Set-Group(){
@@ -508,8 +505,8 @@ Function Set-Group(){
     )
 
     Write-Host "[*] Checking if $user is in $groupName"
-    $groupObj =[ADSI]"WinNT://./$groupName,group" 
-    $membersObj = @($groupObj.psbase.Invoke("Members")) 
+    $groupObj =[ADSI]"WinNT://./$groupName,group"
+    $membersObj = @($groupObj.psbase.Invoke("Members"))
 
     $members = ($membersObj | foreach {$_.GetType().InvokeMember("Name", 'GetProperty', $null, $_, $null)})
 
@@ -541,7 +538,7 @@ function Move-File{
         $path
     )
     Write-Host "Checking if $file exists $path"
-    
+
     $fullPath = $path+"\"+$file
 
     if(Test-Path -Path $fullPath){
@@ -619,7 +616,7 @@ function Write-File{
     if($inputFile -eq "dllhijackservice.exe"){
         if(Test-Path -Path $inputFile){
             Write-Host "$inputFile already exists locally."
-            Remove-Item $inputFile     
+            Remove-Item $inputFile
 
         }else{
             Write-Host "[*] Creating file $inputFile"
@@ -702,7 +699,7 @@ function Write-File{
             $localPath = (pwd).Path
             $fullPath = $localPath+"\"+$inputFile
             [System.IO.File]::WriteAllBytes($fullPath, $bytes)
-            
+
         }
             # Exiting
             return
@@ -710,7 +707,7 @@ function Write-File{
 
     if($inputFile -eq "Unattend.xml"){
         if(Test-Path -Path $inputFile){
-            Write-Host "$inputFile already exists." 
+            Write-Host "$inputFile already exists."
 
         }else{
             Write-Host "[*] Writing $inputFile"
@@ -749,7 +746,7 @@ function Write-File{
             $localPath = (pwd).Path
             $fullPath = $localPath+"\"+$inputFile
             [System.IO.File]::WriteAllBytes($fullPath, $bytes)
-           
+
         }
 
             # Exiting
@@ -759,7 +756,7 @@ function Write-File{
 
     if ($inputFile -eq "lpe.bat") {
         if(Test-Path -Path $inputFile){
-            Write-Host "$inputFile already exists."  
+            Write-Host "$inputFile already exists."
 
         }else{
             Write-Host "[*] Writing $inputFile"
@@ -771,14 +768,14 @@ function Write-File{
             $hexFile +="65735C4D6963726F736F66745C57696E646F77735C496E7374616C6C6572202F762022416C77617973496E7374616C6C456C65766174656422202F74205245475F44574F5244202F642031202F66203E6E756C0D0A7265672061646420484B45595F55534552535C257061727365645F736964255C536F6674776172655C5369"
             $hexFile +="6D6F6E54617468616D5C50755454595C53657373696F6E735C425750313233463432202F76202250726F7879557365726E616D6522202F74205245475F535A202F642061646D696E202F66203E6E756C0D0A7265672061646420484B45595F55534552535C257061727365645F736964255C536F6674776172655C53696D6F6E"
             $hexFile +="54617468616D5C50755454595C53657373696F6E735C425750313233463432202F76202250726F787950617373776F726422202F74205245475F535A202F642070617373776F7264313233202F66203E6E756C0D0A65786974202F620D0A"
-            
+
             # Decode and write it locally
             [byte[]]$bytes = ($hexFile -split '(.{2})' -ne '' -replace '^', '0X')
             $localPath = (pwd).Path
             $fullPath = $localPath+"\"+$inputFile
             [System.IO.File]::WriteAllBytes($fullPath, $bytes)
         }
-    } 
+    }
     if ($inputFile -eq "savecred.bat") {
         if(Test-Path -Path $inputFile){
             Write-Host "$inputFile already exists."
@@ -787,7 +784,7 @@ function Write-File{
             Write-Host "[*] Writing $inputFile"
             $hexFile = "406966202840436F646553656374696F6E203D3D204042617463682920407468656E0A406563686F206F66660A73746172742022222072756E6173202F7361766563726564202F757365723A61646D696E2022636D642E657865202F432065786974220A43536372697074202F2F6E6F6C6F676F202F2F453A4A536372697074"
             $hexFile +="2022257E4630220A676F746F203A454F460A40656E640A575363726970742E4372656174654F626A6563742822575363726970742E5368656C6C22292E53656E644B657973282270617373776F72643132337B454E5445527D22293B0A"
-            
+
             # Decode and write it locally
             [byte[]]$bytes = ($hexFile -split '(.{2})' -ne '' -replace '^', '0X')
             $localPath = (pwd).Path
@@ -797,7 +794,7 @@ function Write-File{
     }
     if ($inputFile -eq "AdminPaint.lnk") {
         if(Test-Path -Path $inputFile){
-            Write-Host "$inputFile already exists."  
+            Write-Host "$inputFile already exists."
 
         }else{
             Write-Host "[*] Writing $inputFile"
@@ -809,7 +806,7 @@ function Write-File{
             $hexFile +="006E0074002E006500780065001D002500770069006E0064006900720025005C00730079007300740065006D00330032005C006D0073007000610069006E0074002E0065007800650066000000090000A02D00000031535053E28A5846BC4C3843BBFC139326986DCE1100000000000000001300000000000000000000002D00"
             $hexFile +="00003153505355284C9F799F394BA8D0E1D42DE1D5F31100000012000000001300000001000000000000000000000010000000050000A025000000DD0000001C0000000B0000A0774EC11AE7025D4EB7442EB1AE5198B7DD00000060000000030000A058000000000000006D736564676577696E31300000000000905B82A7A9"
             $hexFile +="A4D84AB8763D8D45A508DE868F4BB6DC47EA11A75E000C2973FE5E905B82A7A9A4D84AB8763D8D45A508DE868F4BB6DC47EA11A75E000C2973FE5E00000000"
-            
+
             # Decode and write it locally
             [byte[]]$bytes = ($hexFile -split '(.{2})' -ne '' -replace '^', '0X')
             $localPath = (pwd).Path
@@ -919,7 +916,7 @@ function Write-File{
             $fullPath = $localPath+"\"+$inputFile
             [System.IO.File]::WriteAllBytes($fullPath, $bytes)
         }
-            
+
             # Exiting
             return
 
@@ -933,7 +930,7 @@ Function Create-Service{
         $serviceDisplayName
     )
     # Check if the service exists
-    
+
     if ((get-service).name | select-string $serviceName){
          Write-Host "[*] $serviceName is already running"
     }
@@ -973,14 +970,14 @@ Function Set-ServicePermission(){
 
     Write-Host "[*] Setting service permissions"
     sc.exe sdset $serviceName $serviceSddl
-    return 
+    return
 }
 
 Function Start-LocalService(){
     Param(
         $serviceName
     )
-    
+
     # Check if the service is running
     if((Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status -eq "Running"){
         Write-Host "[-] Service $serviceName is already running"
@@ -1188,22 +1185,22 @@ Write-File -InputFile $inputFile
 $Hash = "fa6e050321f433af0e486acf88eefe32"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath 
+Reset-File-Permission -filePath $fullPath
 
 # Create and Start Service
 $service = "svcdll"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "DLL Hijack Service"
 Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
 Start-LocalService -serviceName $service
- 
+
 Write-Host "[+] Services (DLL Hijacking) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -1226,17 +1223,17 @@ Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath 
+Reset-File-Permission -filePath $fullPath
 
 # Create and Start Service
 $service = "daclsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "DACL Service"
 Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSWDC;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
 Start-LocalService -serviceName $service
- 
+
 Write-Host "[+] Services (binPath) configuration complete."
 Write-Host "----------------------------------------"
 
@@ -1254,12 +1251,12 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $newfullPath = "C:\Program Files\Unquoted Path Service"
 Reset-File-Permission -filePath $newfullPath
@@ -1288,19 +1285,19 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
 Reset-File-Permission -filePath $fullPath
 
 # Change registry permission
 Write-Host "[*] Changing registry permissions for regsvc.."
- 
+
 # Registry path
 $registryPath = "HKLM:\SYSTEM\ControlSet001\services\regsvc"
 
@@ -1311,7 +1308,7 @@ $valueData = [byte[]]@(17, 1, 21, 8)
 New-Item -Path $registryPath -Force | Out-Null
 
 # Set registry value
-Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $valueData 
+Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $valueData
 
 # Specify the registry key path
 $registryKeyPath = "HKLM:\SYSTEM\ControlSet001\services\regsvc"
@@ -1358,12 +1355,12 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "d62cfe23ad44ae27954d9b054296f2c3"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
 Reset-File-Permission -filePath $fullPath
@@ -1385,7 +1382,7 @@ $inputFile = "program.exe"
 $path = "C:\Program Files\Autorun Program\"
 
 # Copy Item
-Write-Host "[+] Copying dummy program" 
+Write-Host "[+] Copying dummy program"
 Copy-Item  -Path "C:\Windows\System32\locator.exe" -Destination $inputFile
 
 # Moving it to $path
@@ -1461,12 +1458,12 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "63f7269bbc53e36d2a8c323721313f9c"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
 Reset-File-Permission -filePath $fullPath
@@ -1487,12 +1484,12 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "9b8377237f5dea36d6af73e3f8f932a2"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
 Move-File -file $inputFile -path $path
-            
+
 # Reset Permission to file
 $fullPath = $path+$inputFile
 Reset-File-Permission -filePath $fullPath
@@ -1530,7 +1527,7 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "a61df3883f400102e17894d7e6177c92"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
@@ -1564,7 +1561,7 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "30b7a4303bcf16936432f30ce13edbb9"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
@@ -1572,7 +1569,7 @@ Move-File -file $inputFile -path $path
 
 # Reset Permission to file
 $fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath 
+Reset-File-Permission -filePath $fullPath
 
 ###########################################################################################
 # Creating savecred.bat #
@@ -1586,7 +1583,7 @@ Write-File -InputFile $inputFile -path $path
 $Hash = "5d8190e96d1b2e3230e1fd2409db81db"
 Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory 
+# Creating Directory
 Set-Folder -folder $path
 
 # Moving it to $path
@@ -1596,7 +1593,7 @@ Move-File -file $inputFile -path $path
 #!#!#!#!#!#!#!#! Remember to change this douglas user #!#!#!#!#!#!#!#!#!#!
 icacls.exe C:\PrivEsc\savecred.bat /grant douglas:RX | Out-Null
 
-#schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\"" 
+#schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\""
 # Task action script path
 $scriptPath = $path+$inputFile
 
@@ -1627,13 +1624,21 @@ Write-Host "#### [-] Cleaning up Locally ####"
 # CleanUp-Local -inputFile "savecred.bat"
 # CleanUp-Local -inputFile "Unattend.xml"
 Move-File -file "Unattend.xml" -path "C:\Temp"
-icacls.exe "C:\Temp\Unattend.xml" /grant BUILTIN\Users:R 
+icacls.exe "C:\Temp\Unattend.xml" /grant BUILTIN\Users:R
 # CleanUp-Local -inputFile "unquotedpathservice.exe"
 
+# Enable SMB transfer
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name AllowInsecureGuestAuth -Value 1 -PropertyType DWORD -Force
+
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" SMB1 -Type DWORD -Value 1 -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" SMB2 -Type DWORD -Value 1 -Force
+
+# Enable Administrator Account
+Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
 Write-Host "`n###########################################################################################"
 Write-Host "[+] Configuration completed successfully."
 Write-Host "[+] Please restart Windows to begin."
 
 #Write-Host -NoNewLine '[+] Press any key to continue...';
-#Read-Host -Prompt "[!] Please, restart your computer now.[!]`nPress any key to continue..."    
+#Read-Host -Prompt "[!] Please, restart your computer now.[!]`nPress any key to continue..."
