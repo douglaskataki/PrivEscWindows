@@ -1627,14 +1627,14 @@ Move-File -file "Unattend.xml" -path "C:\Temp"
 icacls.exe "C:\Temp\Unattend.xml" /grant BUILTIN\Users:R
 # CleanUp-Local -inputFile "unquotedpathservice.exe"
 
+# Enable Administrator Account
+Get-LocalUser -Name "Administrator" | Enable-LocalUser
+
 # Enable SMB transfer
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name AllowInsecureGuestAuth -Value 1 -PropertyType DWORD -Force
 
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" SMB1 -Type DWORD -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" SMB2 -Type DWORD -Value 1 -Force
-
-# Enable Administrator Account
-Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
 Write-Host "`n###########################################################################################"
 Write-Host "[+] Configuration completed successfully."
