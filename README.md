@@ -10,6 +10,7 @@ And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.
 TODO:
 
 - [ ] Implement a [SecretStore](https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules) access in order to get some credentials.
+- [X] SSH
 
 # Download Windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
@@ -188,21 +189,6 @@ reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 3) Setup a listener
 
 4) Restart your machine
-
-## AlwaysInstallElevated
-
-1) Check manually:
-```cmd
-reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
-```
-2) Create a .msi reverse shell using msfvenom
-
-3) Set up a listener
-
-4) Execute the following command:
-```
-msiexec /quiet /qn /i C:\Path\To\reverse.msi
-```
 
 # Passwords
 
