@@ -346,26 +346,45 @@ Function Set-UserRights(){
 Function Disable-Firewall(){
     Set-NetFirewallProfile -Enabled False
 
-    Write-Host "Disable DisableAntiSpyware and DisableRealtimeMonitoring"
-    $regpathWindowsDef = 'HKLM:\SOFTWARE\Policies\Microsoft'
-    New-ItemProperty -Path ($regpathWindowsDef + "\Windows Defender") -Name DisableAntiSpyware -Value 1 -PropertyType DWORD -Force | Out-Null
-    New-ItemProperty -Path ($regpathWindowsDef + "\Windows Defender") -Name DisableRealtimeMonitoring -Value 1 -PropertyType DWORD -Force | Out-Null
+    Write-Host "Disable Windows Defender"
+    $regpathWindowsDef = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender'
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableAntiSpyware -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableRealtimeMonitoring -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableAntiVirus -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableSpecialRunningModes -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableRoutinelyTakingAction -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name ServiceKeepAlive -Value 0 -PropertyType DWORD -Force | Out-Null
+
+    $regpathWindowsDef = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection'
+    New-Item -Path $regpathWindowsDef -Force
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableBehaviorMonitoring -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableOnAccessProtection -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableScanOnRealtimeEnable -Value 1 -PropertyType DWORD -Force | Out-Null
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableRealtimeMonitoring -Value 1 -PropertyType DWORD -Force | Out-Null
+
+    $regpathWindowsDef = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Signature Updates'
+    New-Item -Path $regpathWindowsDef -Force
+    New-ItemProperty -Path ($regpathWindowsDef) -Name ForceUpdateFromMU -Value 1 -PropertyType DWORD -Force | Out-Null
+
+    $regpathWindowsDef = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet'
+    New-Item -Path $regpathWindowsDef -Force
+    New-ItemProperty -Path ($regpathWindowsDef) -Name DisableBlockAtFirstSeen -Value 1 -PropertyType DWORD -Force | Out-Null
 
     #!#!#!#! Attention
     # This needs to be executed before in minimal boot configuration (as Administrator!)
-    $regpathControl = 'HKLM:\SYSTEM\CurrentControlSet\Services'
-    Set-ItemProperty -Path ($regpathControl+"\Sense") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WdFilter") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WdNisDrv") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WdNisSvc") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WdBoot") -Name Start -Value 4
-    Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4
+    # $regpathControl = 'HKLM:\SYSTEM\CurrentControlSet\Services'
+    # Set-ItemProperty -Path ($regpathControl+"\Sense") -Name Start -Value 4
+    # Set-ItemProperty -Path ($regpathControl+"\WdFilter") -Name Start -Value 4
+    # Set-ItemProperty -Path ($regpathControl+"\WdNisDrv") -Name Start -Value 4
+    # Set-ItemProperty -Path ($regpathControl+"\WdNisSvc") -Name Start -Value 4
+    # Set-ItemProperty -Path ($regpathControl+"\WdBoot") -Name Start -Value 4
+    # Set-ItemProperty -Path ($regpathControl+"\WinDefend") -Name Start -Value 4
 
     Write-Host "Disable schedule tasks for Windows Defender"
-    Get-ScheduledTask “Windows Defender Cache Maintenance” | Disable-ScheduledTask | Select-Object -Property Actions,State
-    Get-ScheduledTask “Windows Defender Cleanup” | Disable-ScheduledTask | Select-Object -Property Actions,State
-    Get-ScheduledTask “Windows Defender Scheduled Scan” | Disable-ScheduledTask | Select-Object -Property Actions,State
-    Get-ScheduledTask “Windows Defender Verification” | Disable-ScheduledTask | Select-Object -Property Actions,State
+    Get-ScheduledTask "Windows Defender Cache Maintenance" | Disable-ScheduledTask | Select-Object -Property Actions,State
+    Get-ScheduledTask "Windows Defender Cleanup" | Disable-ScheduledTask | Select-Object -Property Actions,State
+    Get-ScheduledTask "Windows Defender Scheduled Scan" | Disable-ScheduledTask | Select-Object -Property Actions,State
+    Get-ScheduledTask "Windows Defender Verification" | Disable-ScheduledTask | Select-Object -Property Actions,State
 
 }
 
@@ -945,11 +964,41 @@ Function CleanUp-Local(){
     }
 }
 
+Function Add-PathVariable {
+    param (
+        [string]$addPath
+    )
+    if (Test-Path $addPath){
+        $regexAddPath = [regex]::Escape($addPath)
+        $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch 
+"^$regexAddPath\\?"}
+        $env:Path = ($arrPath + $addPath) -join ';'
+    } else {
+        Throw "'$addPath' is not a valid path."
+    }
+}
+
 # Functions End Here! ----------------------------------------------------------------
 
 # Use this in order to script to work (As Administrator!)
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
 
+# In order to set up OpenSSH, your machine must be online:
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+# Start the sshd service
+Start-Service sshd
+
+# OPTIONAL but recommended:
+Set-Service -Name sshd -StartupType 'Automatic'
+
+# Confirm the Firewall rule is configured. It should be created automatically by setup. Run the following to verify
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+    Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+} else {
+    Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' has been created and exists."
+}
 
 # Script is starting
 Write-Host "[*] Initial Setup"
@@ -963,6 +1012,10 @@ Write-Host "[*] Create system environment variable for password"
 [Environment]::SetEnvironmentVariable("AdminP@ssword", "password123", [EnvironmentVariableTarget]::Machine)
 
 # Create users
+
+## Enable Administrator Account
+Get-LocalUser -Name "Administrator" | Enable-LocalUser
+
 ## douglas
 $user = 'douglas'
 $password = "password123"
@@ -975,6 +1028,8 @@ Set-Group -userName $user -groupName $groupName
 $groupName = "Remote Desktop Users"
 Set-Group -userName $user -groupName $groupName
 
+Get-LocalUser -Name $user | Enable-LocalUser
+
 ## admin
 $user = 'admin'
 $password = "password123"
@@ -983,6 +1038,8 @@ Set-User -user $user -password $password
 
 $groupName = "Administrators"
 Set-Group -userName $user -groupName $groupName
+
+Get-LocalUser -Name $user | Enable-LocalUser
 
 ## backupuser - secretdumps
 $user = 'backupuser'
@@ -1045,7 +1102,8 @@ $folder = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\"
 Set-Folder -folder $folder
 
 # Add C:\Temp in $PATH for dll hijacking
-Set-PathVariable AddPath "C:\Temp"
+$addPath = 'C:\Temp'
+Add-PathVariable -addPath $addPath
 
 # Set PS History and grant Read for everybody
 # check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
@@ -1330,7 +1388,7 @@ $valueData = "password123"
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 
 $valueName = "AutoAdminLogon"
-$valueData = 1
+$valueData = 0
 New-ItemProperty -Path $registryPath -Name $valueName -Value $valueData -PropertyType String -Force | Out-Null
 Write-Host "[+] Password Mining (Registry) configuration complete."
 Write-Host "----------------------------------------"
@@ -1518,8 +1576,6 @@ Move-File -file "Unattend.xml" -path "C:\Temp"
 icacls.exe "C:\Temp\Unattend.xml" /grant BUILTIN\Users:R
 # CleanUp-Local -inputFile "unquotedpathservice.exe"
 
-# Enable Administrator Account
-Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
 # Enable SMB transfer
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters" -Name AllowInsecureGuestAuth -Value 1 -PropertyType DWORD -Force
