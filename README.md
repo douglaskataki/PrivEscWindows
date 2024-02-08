@@ -36,37 +36,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
 
 5) Change in power setting the time to turn off the machine (by default is 5 min).
 
-# Disable Windows Defender
-Until now, I couldn't find anyway to automate this task. So, just follow this instructions to disable windows defender.
-
-1) Copy the content from minimal.ps1 to a file named minimal (using powershell ISE) and save it on Desktop.
-
-![minimal](img/minimal.png)
-
-2) Type `msconfig` in windows search bar and click on System Configuration.
-3) In Boot tab, set Safe boot and Minimal.
-
-![msconfig](img/msconfig.png)
-
-4) Click Ok and restart your machine.
-5) Open Powershell as *Administrator*.
-6) Change directory to Desktop with the following command:
-
-```powershell
-cd C:\Users\User\Desktop
-```
-
-7) Run the minimal.ps1
-
-```powershell
-.\minimal.ps1
-```
-
-8) Type `msconfig` in windows search bar and click on System Configuration
-9) In Boot tab, unset Safe boot and Minimal
-10) Click in Ok and Restart. This will restart the machine.
-
-You can do it manually (I will put it here soon).
+6) Go to View Advanced System Settings -> Startup and Recovery -> Settings and unset Automatic Restart.
 
 # Running setup.ps1
 Now is the fun part, we run the setup script and we have a vulnerable windows 11 machine. We can now train the most common privilege escalation techniques.
