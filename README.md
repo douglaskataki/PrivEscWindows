@@ -10,12 +10,12 @@ And last, but not least, [Tib3rius](https://github.com/Tib3rius/) and his setup.
 TODO:
 
 - [ ] Implement a [SecretStore](https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules) access in order to get some credentials.
-- [X] SSH
+- [X] SSH server, now you can connect using ssh.
 
 # Download Windows 11 dev edition
 Download from this link: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 
-Be careful! The VM will require a minimum of 8GB of RAM and at least 70GB of disk space.
+Be careful! The VM will require a minimum of 8GB of RAM and at least 70GB of disk space. But after setting up the VM, you can lower your requirements to 4GB and 2 processors.
 
 # First, Before anything
 We need to enable our machine to execute scripts.
@@ -78,7 +78,7 @@ Use douglas user to escalate your privilege through the machine.
 
 **Note:** You can change `douglas` as another user. Just search for all `douglas` entries in this script and change all of them.
 
-Creds: `douglas:password123`
+Creds: `douglas:password321`
 
 Groups: Remote Desktop and Remote Management (access via evil-winrm)
 

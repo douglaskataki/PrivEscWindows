@@ -964,20 +964,6 @@ Function CleanUp-Local(){
     }
 }
 
-Function Add-PathVariable {
-    param (
-        [string]$addPath
-    )
-    if (Test-Path $addPath){
-        $regexAddPath = [regex]::Escape($addPath)
-        $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch 
-"^$regexAddPath\\?"}
-        $env:Path = ($arrPath + $addPath) -join ';'
-    } else {
-        Throw "'$addPath' is not a valid path."
-    }
-}
-
 # Functions End Here! ----------------------------------------------------------------
 
 # Use this in order to script to work (As Administrator!)
@@ -1018,7 +1004,7 @@ Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
 ## douglas
 $user = 'douglas'
-$password = "password123"
+$password = "password321"
 
 Set-User -user $user -password $password
 
@@ -1102,8 +1088,7 @@ $folder = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\"
 Set-Folder -folder $folder
 
 # Add C:\Temp in $PATH for dll hijacking
-$addPath = 'C:\Temp'
-Add-PathVariable -addPath $addPath
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Temp", "Machine")
 
 # Set PS History and grant Read for everybody
 # check this file: cat "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
@@ -1111,9 +1096,17 @@ Add-PathVariable -addPath $addPath
 Set-PSReadlineOption -HistorySavePath "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 
 # added fakeadmin credentials to this
+$password = 'fakeadmin'
 echo "$password = ConvertTo-SecureString 'fakeadmin' -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential('fakeadmin', $password)
 Enter-PSSession -ComputerName ComputerName -Credential $cred" > "C:\Users\User\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+
+# added backupuser credentials to this
+$password = 'backup1'
+New-Item -ItemType File -Path "C:\DevTools\ConsoleHost_history.txt"
+echo "$password = ConvertTo-SecureString 'backup1' -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential('backupuser', $password)
+Enter-PSSession -ComputerName ComputerName -Credential $cred" > "C:\DevTools\ConsoleHost_history.txt"
 
 # Try to find this file with winPEAS! And yes, it will find it.
 icacls.exe "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" /grant Users:R
@@ -1465,39 +1458,39 @@ Write-Host "----------------------------------------"
 Write-Host "[*] Creating final configuration task to run upon restart..."
 
 ###########################################################################################
-# Creating lpe.bat
-Write-Host "`n[*] Creating lpe.bat"
-$inputFile = "lpe.bat"
-$path = "C:\PrivEsc\"
+# # Creating lpe.bat
+# Write-Host "`n[*] Creating lpe.bat"
+# $inputFile = "lpe.bat"
+# $path = "C:\PrivEsc\"
 
-Write-File -InputFile $inputFile -path $path
+# Write-File -InputFile $inputFile -path $path
 
-# Checking hash
-$Hash = "a61df3883f400102e17894d7e6177c92"
-Check-Hash -file $inputFile -Hash $Hash
+# # Checking hash
+# $Hash = "a61df3883f400102e17894d7e6177c92"
+# Check-Hash -file $inputFile -Hash $Hash
 
-# Creating Directory
-Set-Folder -folder $path
+# # Creating Directory
+# Set-Folder -folder $path
 
-# Moving it to $path
-Move-File -file $inputFile -path $path
+# # Moving it to $path
+# Move-File -file $inputFile -path $path
 
-#schtasks.exe /Create /RU "SYSTEM" /SC ONLOGON /TN "LPE" /TR "\"C:\PrivEsc\lpe.bat\""
+# #schtasks.exe /Create /RU "SYSTEM" /SC ONLOGON /TN "LPE" /TR "\"C:\PrivEsc\lpe.bat\""
 
-# Task action script path
-$scriptPath = $path+$inputFile
+# # Task action script path
+# $scriptPath = $path+$inputFile
 
-# Task action
-$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c $scriptPath"
+# # Task action
+# $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c $scriptPath"
 
-# Task trigger (ONLOGON)
-$trigger = New-ScheduledTaskTrigger -AtLogon
+# # Task trigger (ONLOGON)
+# $trigger = New-ScheduledTaskTrigger -AtLogon
 
-# Task principal (Run as SYSTEM)
-$principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
+# # Task principal (Run as SYSTEM)
+# $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount
 
-# Register the scheduled task
-Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "LPE" -Force
+# # Register the scheduled task
+# Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "LPE" -Force
 
 ###########################################################################################
 # Creating AdminPaint.lnk
@@ -1525,6 +1518,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -
 
 Write-Host "`n[*] Creating savecred.bat"
 $inputFile = "savecred.bat"
+$path = "C:\PrivEsc\"
 
 Write-File -InputFile $inputFile -path $path
 
