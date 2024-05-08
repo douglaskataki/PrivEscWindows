@@ -1008,6 +1008,9 @@ $password = "password321"
 
 Set-User -user $user -password $password
 
+$groupName = "Users"
+Set-Group -userName $user -groupName $groupName
+
 $groupName = "Remote Management Users"
 Set-Group -userName $user -groupName $groupName
 
@@ -1033,6 +1036,9 @@ $password = "backup1"
 
 Set-User -user $user -password $password
 
+$groupName = "Users"
+Set-Group -userName $user -groupName $groupName
+
 $groupName = "Backup Operators"
 Set-Group -userName $user -groupName $groupName
 
@@ -1044,6 +1050,9 @@ $user = 'fakeadmin'
 $password = "fakeadmin"
 
 Set-User -user $user -password $password
+
+$groupName = "Users"
+Set-Group -userName $user -groupName $groupName
 
 $groupName = "Remote Management Users"
 Set-Group -userName $user -groupName $groupName
@@ -1061,7 +1070,7 @@ if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"
 }else{
     Write-Host "[*] Enable WinRM"
     Enable-PSRemoting -SkipNetworkProfileCheck -Force
-    winrm quickconfig -quiet
+    #winrm quickconfig -quiet
 }
 
 
