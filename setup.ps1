@@ -1003,7 +1003,7 @@ Write-Host "[*] Create system environment variable for password"
 Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
 ## 
-$user = ''
+$user = 'douglas'
 $password = "password321"
 
 Set-User -user $user -password $password
@@ -1049,6 +1049,9 @@ $password = "fakeadmin"
 Set-User -user $user -password $password
 
 $groupName = "Remote Management Users"
+Add-LocalGroupMember -Group $groupName -Member $user
+
+$groupName = "Remote Desktop Users"
 Add-LocalGroupMember -Group $groupName -Member $user
 
 Set-UserRights -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
