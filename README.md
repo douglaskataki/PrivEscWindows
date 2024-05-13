@@ -58,7 +58,15 @@ cd C:\Users\User\Desktop
 .\setup.ps1
 ```
 
-5) Restart your windows VM.
+5) Change User autologin:
+
+Go to Accounts > Sign-in options
+
+Set a password to User account
+
+**Turn off** Use my sign-in info to automatically finish setting up after an update.
+
+6) Restart your windows VM.
 
 # How to use it this script
 

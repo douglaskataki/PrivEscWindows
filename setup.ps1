@@ -1002,20 +1002,20 @@ Write-Host "[*] Create system environment variable for password"
 ## Enable Administrator Account
 Get-LocalUser -Name "Administrator" | Enable-LocalUser
 
-## douglas
-$user = 'douglas'
+## 
+$user = ''
 $password = "password321"
 
 Set-User -user $user -password $password
 
 $groupName = "Users"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 $groupName = "Remote Management Users"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 $groupName = "Remote Desktop Users"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 Get-LocalUser -Name $user | Enable-LocalUser
 
@@ -1026,7 +1026,7 @@ $password = "password123"
 Set-User -user $user -password $password
 
 $groupName = "Administrators"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 Get-LocalUser -Name $user | Enable-LocalUser
 
@@ -1036,14 +1036,11 @@ $password = "backup1"
 
 Set-User -user $user -password $password
 
-$groupName = "Users"
-Set-Group -userName $user -groupName $groupName
-
 $groupName = "Backup Operators"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 $groupName = "Remote Management Users"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 ## fakeadmin - seimpersonateprivilege
 $user = 'fakeadmin'
@@ -1051,11 +1048,8 @@ $password = "fakeadmin"
 
 Set-User -user $user -password $password
 
-$groupName = "Users"
-Set-Group -userName $user -groupName $groupName
-
 $groupName = "Remote Management Users"
-Set-Group -userName $user -groupName $groupName
+Add-LocalGroupMember -Group $groupName -Member $user
 
 Set-UserRights -AddRight -Username fakeadmin -UserRight SeImpersonatePrivilege
 
@@ -1070,7 +1064,7 @@ if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"
 }else{
     Write-Host "[*] Enable WinRM"
     Enable-PSRemoting -SkipNetworkProfileCheck -Force
-    #winrm quickconfig -quiet
+    winrm quickconfig -quiet
 }
 
 
