@@ -855,7 +855,7 @@ Function Create-Service{
         }
         # These services needed to be in quotes
         else{
-            if($serviceName -eq "svcdll"){
+            if($serviceName -eq "dllsvc"){
                 $servicePath = '"C:\Program Files\DLL Hijack Service\dllhijackservice.exe", "DLL Hijack Service"'
             }
             if($serviceName -eq "daclsvc"){
@@ -1042,6 +1042,8 @@ Add-LocalGroupMember -Group $groupName -Member $user
 $groupName = "Remote Management Users"
 Add-LocalGroupMember -Group $groupName -Member $user
 
+Set-UserRights -AddRight -Username backupuser -UserRight SeBackupPrivilege
+
 ## fakeadmin - seimpersonateprivilege
 $user = 'fakeadmin'
 $password = "fakeadmin"
@@ -1067,6 +1069,7 @@ if ((Get-Service -Name WinRM -ErrorAction SilentlyContinue).Status -eq "Running"
 }else{
     Write-Host "[*] Enable WinRM"
     Enable-PSRemoting -SkipNetworkProfileCheck -Force
+    #winrm invoke Restore winrm/Config
     winrm quickconfig -quiet
 }
 
@@ -1144,8 +1147,18 @@ $fullPath = $path+$inputFile
 Reset-File-Permission -filePath $fullPath
 
 # Create and Start Service
-$service = "svcdll"
+$service = "dllsvc"
 Create-Service -serviceName $service -servicePath $fullPath -serviceDisplayName "DLL Hijack Service"
+# CC LC SW RP WP DT LO CR RC        
+## CC: Create All Child Objects
+## LC: List Contents
+## SW: All Validated Writes
+## RP: Read All Properties
+## WP: Write All Properties
+## DT: Delete Subtree
+## LO: List Objects
+## CR: All Extended Rights
+## RC: Read Permissions
 Set-ServicePermission -serviceName $service -serviceSddl "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;RPWPLCRCCCLOSW;;;WD)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"
 Start-LocalService -serviceName $service
 
